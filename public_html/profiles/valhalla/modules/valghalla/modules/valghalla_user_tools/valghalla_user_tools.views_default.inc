@@ -349,10 +349,19 @@ function valghalla_user_tools_views_default_views() {
   $handler->display->display_options['fields']['type']['id'] = 'type';
   $handler->display->display_options['fields']['type']['table'] = 'node';
   $handler->display->display_options['fields']['type']['field'] = 'type';
+  /* Felt: eBoks emne (hidden) */
+  $handler->display->display_options['fields']['field_eboks_subject']['id'] = 'field_eboks_subject';
+  $handler->display->display_options['fields']['field_eboks_subject']['table'] = 'field_data_field_eboks_subject';
+  $handler->display->display_options['fields']['field_eboks_subject']['field'] = 'field_eboks_subject';
+  $handler->display->display_options['fields']['field_eboks_subject']['ui_name'] = 'eBoks emne (hidden)';
+  $handler->display->display_options['fields']['field_eboks_subject']['label'] = '';
+  $handler->display->display_options['fields']['field_eboks_subject']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['field_eboks_subject']['element_label_colon'] = FALSE;
   /* Felt: Indhold: Emne */
   $handler->display->display_options['fields']['field_subject']['id'] = 'field_subject';
   $handler->display->display_options['fields']['field_subject']['table'] = 'field_data_field_subject';
   $handler->display->display_options['fields']['field_subject']['field'] = 'field_subject';
+  $handler->display->display_options['fields']['field_subject']['empty'] = '[field_eboks_subject]';
   /* Felt: Indhold: Body */
   $handler->display->display_options['fields']['body']['id'] = 'body';
   $handler->display->display_options['fields']['body']['table'] = 'field_data_body';
@@ -432,6 +441,7 @@ function valghalla_user_tools_views_default_views() {
     t('<a class="btn btn-success" href="/valghalla/administration/notifications/add?destination=valghalla/administration/mail-skabeloner">+ Tilføj skabelon</a>'),
     t('Type'),
     t('Emne'),
+    t('[field_eboks_subject]'),
     t('Brødtekst'),
     t('Redigér'),
     t('Page'),

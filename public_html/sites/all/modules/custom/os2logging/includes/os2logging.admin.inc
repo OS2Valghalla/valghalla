@@ -205,7 +205,7 @@ function _os2logging_node_type_chosen($node_type) {
  */
 function os2logging_settings_upload_import_file() {
   // Add validator for your file type etc.
-  $validators = array('file_validate_extensions' => array('log, json'));
+  $validators = array('file_validate_extensions' => array('log', 'json'));
 
   $file = file_save_upload('logs_import_file', $validators, FALSE, 0);
 
@@ -294,7 +294,7 @@ function os2logging_access_logs_table_form($form, &$form_state) {
   foreach ($result as $entry) {
     $options[] = array(
       'created' => format_date($entry->created, 'short'),
-      'node_title' => l($entry->title, 'node/' . $entry->nid),
+      'node_title' => l($entry->title, 'node/' . $entry->sid),
       'message' => $entry->message,
       'user' => ($entry->uid) ? l($entry->name, 'user/' . $entry->uid) : t('Anonym'),
       'user_ip' => $entry->ip,
