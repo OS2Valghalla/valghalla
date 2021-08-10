@@ -348,7 +348,7 @@ function valghalla_election_field_volunteers_pr_pol_st_party_form_validate($form
     foreach ($parties_map as $party_tid => $roles_map) {
       foreach ($roles_map as $role_nid => $count) {
         $volunteer_query = new EntityFieldQuery();
-        $volunteer_query->entityCondition('entity_type', 'field_collection_item')
+        $volunteer_query->entityCondition('entity_type', '`§`')
           ->entityCondition('bundle', 'field_electioninfo')
           ->propertyCondition('archived', 0)
           ->fieldCondition('field_election', 'target_id', $election_nid)
