@@ -70,7 +70,6 @@ function valhalla_enable_modules() {
     'views_ui',
     'contextual',
     'shortcut',
-    'color',
     // Valghalla modules.
     'valghalla_lists',
     'liste_beskeder',
@@ -83,8 +82,6 @@ function valhalla_enable_modules() {
     'valghalla_eboks',
     'valghalla_mail',
     'valghalla_sms',
-    'valghalla_signup',
-    'valghalla_signup_list',
     'valghalla_volunteer_validator',
     'valghalla_volunteers_import',
     'valghalla_volunteers_invite',
