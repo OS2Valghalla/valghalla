@@ -91,13 +91,13 @@ function valghalla_tfa_user_login(&$edit, $account) {
 
 /**
  * Implement hook_boot
- * 
+ *
  * Intended to forbid access to any of the pages, unless TFA is set up (unless TFA setup is not mandatory).
  */
 function valghalla_tfa_boot() {
   //proceeding only for non-anonymous user, which does NOT have flag in the session
-  if (php_sapi_name() != 'cli' && $GLOBALS['user']->uid != 0 && !$_SESSION['tfa_is_setup']) {
-    require_once(DRUPAL_ROOT . '/includes/common.inc');     
+  if (php_sapi_name() != 'cli' && $GLOBALS['user']->uid != 0 && empty($_SESSION['tfa_is_setup'])) {
+    require_once(DRUPAL_ROOT . '/includes/common.inc');
     require_once(DRUPAL_ROOT . '/includes/path.inc');
 
     //is the TFA mandatory?
