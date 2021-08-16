@@ -85,46 +85,56 @@ function valghalla_external_server_signup_signup_form($form, &$form_state) {
     valghalla_external_server_signup_terminate_signup();
   }
 
-  // Attempt to fetch CPR from session.
-  if (module_exists('nemlogin')) {
-    $nemlogin_object = nemlogin_get_plugin_object();
-    $cpr = !empty($nemlogin_object) ? $nemlogin_object->fetchValue('cpr') : NULL;
-    // Adding dash, if missing. E.g. 123456-7890.
-    if (preg_match('/[0-9]{10}/', $cpr)) {
-      $cpr = substr($cpr, 0, 6) . '-' . substr($cpr, 6, 4);
+  $cprProvider = variable_get('valghalla_external_server_signup_cpr_provider', 'nemlogin');
+
+  if ($cprProvider == 'nemlogin') {
+    // Attempt to fetch CPR from session.
+    if (module_exists('nemlogin')) {
+      $nemlogin_object = nemlogin_get_plugin_object();
+      $cpr = !empty($nemlogin_object) ? $nemlogin_object->fetchValue('cpr') : NULL;
+      // Adding dash, if missing. E.g. 123456-7890.
+      if (preg_match('/[0-9]{10}/', $cpr)) {
+        $cpr = substr($cpr, 0, 6) . '-' . substr($cpr, 6, 4);
+      }
     }
-  }
 
-  if ($cpr) {
-    $cpr = valghalla_synch_node_export_get_encrypt($cpr);
-  }
-
-  // Attempt to fetch CPR from form state.
-  if (!$cpr && isset($form_state['input'])) {
-    if (isset($form_state['input']['cpr'])) {
-      $cpr = $form_state['input']['cpr'];
+    // Attempt to fetch CPR from form state.
+    if (!$cpr && isset($form_state['input'])) {
+      if (isset($form_state['input']['cpr'])) {
+        $cpr = $form_state['input']['cpr'];
+      }
     }
-  }
 
-  $form['cpr'] = array(
-    '#type' => 'hidden',
-    '#default_value' => $cpr,
-  );
-
-  if (!$cpr && module_exists('nemlogin')) {
-    $form['nemid_login_link'] = array(
-      '#markup' => nemlogin_link('Login med Nemlogin', NULL, array(
-        'attributes' => array(
-          'class' => array(
-            'btn',
-            'btn-secondary',
-          ),
-        ),
-      )),
+    $form['cpr'] = array(
+      '#type' => 'hidden',
+      '#default_value' => $cpr,
     );
+
+    if (!$cpr && module_exists('nemlogin')) {
+      $form['nemid_login_link'] = array(
+        '#markup' => nemlogin_link('Login med Nemlogin', NULL, array(
+          'attributes' => array(
+            'class' => array(
+              'btn',
+              'btn-secondary',
+            ),
+          ),
+        )),
+      );
+    }
+    else {
+      $form['#cpr'] = $cpr;
+    }
   }
   else {
-    $form['#cpr'] = valghalla_synch_node_export_get_decrypt($cpr);
+    $form['cpr'] = array(
+      '#type' => 'textfield',
+      '#description' => t('CPR'),
+      '#attributes' => array(
+        'placeholder' => t('CPR'),
+      ),
+      '#required' => TRUE,
+    );
   }
 
   $form['email-container'] = array(
@@ -323,7 +333,7 @@ function valghalla_external_server_signup_signup_form($form, &$form_state) {
   }
 
   // Hiding fields if CPR is not present.
-  if (!$cpr) {
+  if ($cprProvider == 'nemlogin' && !$cpr) {
     $form['cpr']['#access'] = FALSE;
     $form['email-container']['#access'] = FALSE;
     $form['phone-container']['#access'] = FALSE;
@@ -499,12 +509,12 @@ function valghalla_external_server_signup_terminate_signup($terminate_code = 0) 
  * Also changes the format of CPR, if needed.
  */
 function valghalla_external_server_signup_signup_form_validate($form, &$form_state) {
-  $cpr = valghalla_synch_node_export_get_decrypt($form_state['values']['cpr']);
+  $cpr = $form_state['values']['cpr'];
 
   // Adding dash, if missing. E.g. 123456-7890.
-  if (preg_match('/[0-9]{10}/', $cpr)) {
+  if (preg_match('/^[0-9]{10}$/', $cpr)) {
     $cpr = substr($cpr, 0, 6) . '-' . substr($cpr, 6, 4);
-    $form_state['input']['cpr'] = valghalla_synch_node_export_get_encrypt($cpr);
+    $form_state['input']['cpr'] = $cpr;
   }
   if (!preg_match('/[0-9]{6}-[0-9]{4}/', $cpr)) {
     form_set_error('cpr', t('Forkert CPR-format, korrekt format er 123456-7890'));
@@ -560,7 +570,8 @@ function valghalla_external_server_signup_signup_form_submit($form, &$form_state
   $polling_station_nid = isset($form_state['polling_station']) ? $form_state['polling_station']->nid : $form_state['values']['polling_station_select'];
 
   if ($polling_station_nid && $role_nid && $party_tid && $election_nid) {
-    $cpr = $form_state['values']['cpr'];
+    // Encrypting CPR right away.
+    $cpr = valghalla_synch_node_export_get_encrypt($form_state['values']['cpr']);
 
     $volunteer_node = odin_load_volunteer_by_cpr($cpr);
 
@@ -624,6 +635,17 @@ function valghalla_external_server_signup_signup_form_submit($form, &$form_state
  * External server signup settings form.
  */
 function valghalla_external_server_signup_settings_form($form, $form_state) {
+  $form['valghalla_external_server_signup_cpr_provider'] = array(
+    '#type' => 'radios',
+    '#title' => t('Volunteer CPR'),
+    '#options' => array(
+      'nemlogin' => t('Require via Nemlogin'),
+      'manual' => t('Provide manually (extra field)')
+    ),
+    '#default_value' => variable_get('valghalla_external_server_signup_cpr_provider', 'nemid'),
+    '#description' => t('Determine how the CPR of volunteer is collected'),
+  );
+
   /* Party only START */
   $form['valghalla_external_server_signup_text_party_fs'] = array(
     '#type' => 'fieldset',
