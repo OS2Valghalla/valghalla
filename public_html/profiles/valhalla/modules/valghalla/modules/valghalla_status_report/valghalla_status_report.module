@@ -395,15 +395,20 @@ function _generate_pdf_content($election_nid = NULL, $party_tid = NULL) {
 
   $markup .= _generate_pdf_content__volunteer_list_from_polling_station($election_nid, $party_tid, $polling_station_nids);
 
-  // We are requiring a specific party.
-  if ($party_tid) {
-    if (odin_is_election_active($election_nid) && module_exists('valghalla_internal_server')) {
+  if (odin_is_election_active($election_nid) && module_exists('valghalla_internal_server')) {
+    // External links.
+    $markup .= '<pagebreak>';
+    $markup .= '<h1>' . t('Eksterne links') . '</h1>';
 
-      // External links.
-      $markup .= '<pagebreak>';
-
-      $markup .= '<h1>' . t('Eksterne links') . '</h1>';
+    // We are requiring a specific party.
+    if ($party_tid) {
       $markup .= _generate_pdf_content__party_external_links($election_node->nid, $party_tid);
+    }
+    else {
+      $parties = odin_get_parties();
+      foreach ($parties as $party_tid => $party_name) {
+        $markup .= _generate_pdf_content__party_external_links($election_node->nid, $party_tid);
+      }
     }
   }
 
