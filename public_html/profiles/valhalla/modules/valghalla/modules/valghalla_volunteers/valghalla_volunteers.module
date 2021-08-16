@@ -165,6 +165,14 @@ function valghalla_volunteers_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
 
+  $items['ajax/seat_matrix_roles_table/%'] = array(
+    'title' => t('seat matrix roles table ajax'),
+    'access arguments' => array('view polling station'),
+    'page callback' => 'valghalla_volunteers_seat_matrix_roles_table_ajax',
+    'page arguments' => array(2),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
   return $items;
 }
 
@@ -558,6 +566,9 @@ function valghalla_volunteers_to_polling_station($station_nid = NULL) {
   drupal_add_js(drupal_get_path('module', 'valghalla_volunteers') . '/valghalla_volunteers.js');
   module_load_include('inc', 'valghalla_volunteers', 'valghalla_volunteers');
 
+  // Adding seat matrix roles table lazy loading.
+  drupal_add_js(array('valghalla_volunteers' => array('seat_matrix_polling_station' => $station_nid)), 'setting');
+
   $user_party_id = empty($user->field_party[LANGUAGE_NONE][0]['tid']) ? FALSE : $user->field_party[LANGUAGE_NONE][0]['tid'];
   $polling_station = node_load($station_nid);
   $field_digital_election_list=field_get_items('node', $polling_station, 'field_digital_election_list');
@@ -581,47 +592,32 @@ function valghalla_volunteers_to_polling_station($station_nid = NULL) {
 
   $markup = '<div class="row row--equal-height-columns">';
 
-  if (user_access('valghalla see all parties') && !$user_party_id) {
-    // tth: If the user is administrator and theres no party chosen, show all parties!
-    $parties = odin_get_parties();
+  if (user_access('valghalla see all parties') || $user_party_id) {
     $markup .= '<div class="col-xs-12 col-sm-6 col-md-7">';
 
-    foreach ($parties  as $party_tid => $party_name) {
+    if ($user_party_id) {
+      // If user has a party selected, show it.
+      $parties = [$user_party_id => ''];
+    }
+    else {
+      // If the user is administrator and theres no party chosen, show all parties!
+      $parties = odin_get_parties();
+    }
+
+    // Polling stations markup.
+    foreach ($parties as $party_tid => $party_name) {
       if (is_array($restrict_polling_stations) && !in_array($polling_station->nid, $restrict_polling_stations)) {
         continue;
       }
 
-      // Polling stations.
-      if ($output = valghalla_volunteers_to_polling_station_markup($polling_station, $party_tid)) {
-        $markup .= $output;
-      }
+      $markup .= valghalla_volunteers_to_polling_station_markup($polling_station, $party_tid);
     }
 
     $markup .= '</div>';
 
-    // Table.
-    if ($output = valghalla_volunteers_seat_matrix_roles_table_markup($polling_station, $parties)) {
-      $markup .= '<div class="col-xs-12 col-sm-6 col-md-5">';
-      $markup .=    $output;
-      $markup .= '</div>';
-    }
-  }
-  elseif (!empty($user_party_id)) {
-
-    // Polling stations.
-    if ($output = valghalla_volunteers_to_polling_station_markup($polling_station, $user_party_id)) {
-      $markup .= '<div class="col-xs-12 col-sm-6 col-md-7">';
-      $markup .=    $output;
-      $markup .= '</div>';
-    }
-
-    // Table.
-    $user_party_loaded = taxonomy_term_load($user_party_id);
-    if ($output = valghalla_volunteers_seat_matrix_roles_table_markup($polling_station, array($user_party_id => $user_party_loaded->name))) {
-      $markup .= '<div class="col-xs-12 col-sm-6 col-md-5">';
-      $markup .=    $output;
-      $markup .= '</div>';
-    }
+    // Seat matrix table is lazy loaded.
+    $markup .= '<div class="col-xs-12 col-sm-6 col-md-5 ajax-lazy-seat-matrix-roles-table">';
+    $markup .= '</div>';
   }
   else {
     $markup .= 'Ingen patries at vise.';
@@ -635,7 +631,7 @@ function valghalla_volunteers_to_polling_station($station_nid = NULL) {
         <div class="modal-content">
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            
+
             <h4 class="modal-title">' . t('Vælg tilforordnet') . '</h4>
           </div>
           <div class="modal-body">
@@ -652,7 +648,7 @@ function valghalla_volunteers_to_polling_station($station_nid = NULL) {
                   </td>
                 <tr>
               </table>
-              
+
               <div class="text-center">
                 <at-pagination at-list="filteredList" at-config="config"></at-pagination>
               </div>
@@ -969,6 +965,31 @@ function valghalla_volunteers_seat_matrix_roles_table_markup($polling_station, $
     'parties_status' => $parties_status,
     'existing_roles' => $existing_roles,
   ));
+}
+
+/**
+ * Ajax callback.
+ *
+ * Returns seat matrix roles table for the specified polling station.
+ *
+ * @param int $polling_station_id
+ *   Nid of the polling station.
+ */
+function valghalla_volunteers_seat_matrix_roles_table_ajax($polling_station_id) {
+  global $user;
+  $user = user_load($user->uid);
+
+  $user_party_id = empty($user->field_party[LANGUAGE_NONE][0]['tid']) ? FALSE : $user->field_party[LANGUAGE_NONE][0]['tid'];
+
+  if ($user_party_id) {
+    $parties = array($user_party_id => '');
+  } else {
+    $parties = odin_get_parties();
+  }
+  $polling_station = node_load($polling_station_id);
+  $output = valghalla_volunteers_seat_matrix_roles_table_markup($polling_station, $parties);
+
+  drupal_json_output($output);
 }
 
 /**

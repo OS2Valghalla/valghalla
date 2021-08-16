@@ -228,4 +228,14 @@ var valghalla_volunteers = valghalla_volunteers || [];
       $wrapper.html($button.removeClass('hidden'));
     },
   };
+  Drupal.behaviors.valghallaLoadSeatMatrixRolesTable = {
+    attach: function (context, settings) {
+      var basePath = settings.basePath;
+      var polling_station_id = settings.valghalla_volunteers.seat_matrix_polling_station;
+
+      $.get( basePath + "ajax/seat_matrix_roles_table/" + polling_station_id, function( data ) {
+        $('.ajax-lazy-seat-matrix-roles-table').html(data);
+      });
+    }
+  }
 })(jQuery);

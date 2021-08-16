@@ -7,12 +7,10 @@
 include_once 'os2logging.features.inc';
 
 use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
 
 /*
  * Implements HOOK_menu()
  */
-
 function os2logging_menu() {
   $items = array();
 
@@ -33,6 +31,17 @@ function os2logging_menu() {
       'page callback' => 'drupal_get_form',
       'page arguments' => array('os2logging_settings_form'),
       'type' => MENU_NORMAL_ITEM,
+      'file' => 'includes/os2logging.admin.inc',
+  );
+
+  $items['admin/reports/os2logging'] = array(
+    'title' => t('OS2Logging Access Logs'),
+    'description' => t('Access log overview table'),
+    'access arguments' => array('access administration pages'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('os2logging_access_logs_table_form'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'includes/os2logging.admin.inc',
   );
 
   return $items;
@@ -51,69 +60,29 @@ function os2logging_monolog_channel_info() {
 }
 
 /*
- * Implements HOOK_node_load()
+ * Implements HOOK_node_view().
  */
-
-function os2logging_node_load($nodes, $types) {
-
+function os2logging_node_view($node, $view_mode, $langcode) {
   global $user;
 
-  $logger_file_path = variable_get('os2logging_log_file_path');
+  // Ignoring anonym user, as valghalla is only available for authenticated
+  // user.
+  // Ignore anonymous user.
+  $log_anonym_user = variable_get('os2logging_log_anonymous_user');
+  if (!$log_anonym_user && $user->uid == 0) {
+    return;
+  }
+
   $chosen_node_types = variable_get('os2logging_chosen_node_types');
 
   $logger = monolog('os2logging');
   $logger->pushProcessor(new \Monolog\Processor\WebProcessor);
   if (!empty($chosen_node_types)) {
-    foreach ($nodes as $nid => $node) {
-      if (in_array($node->type, $chosen_node_types)) {
-        $message = sprintf("node type:%s id:%d was loaded by user( uid:%s name:%s  e-mail:%s) \n\r", $node->type, $node->nid, $user->uid, $user->name, $user->email);
-        $logger->log(Logger::INFO, $message, array());
-
-        //watchdog('mytype', 'TEST', NULL, WATCHDOG_INFO, NULL);
-      }
+    if (in_array($node->type, $chosen_node_types)) {
+      $message = sprintf("NEW node type: %s id: %d was loaded by user (uid: %s name: %s  e-mail: %s)", $node->type, $node->nid, $user->uid, $user->name, $user->mail);
+      $logger->log(Logger::INFO, $message, array('sid' => $node->nid, 'uid' => $user->uid, 'created' => REQUEST_TIME));
     }
   }
-}
-
-function os2logging_settings_form($form, $form_state) {
-  $node_types = node_type_get_types();
-
-  $form['os2logging-description'] = array(
-      '#type' => 'markup',
-      '#markup' => t('Choose the node types you wish to be monitored.'),
-      '#prefix' => '<p>',
-      '#suffix' => '<hr /></p>',
-  );
-
-  foreach ((array) $node_types as $nd) {
-    $form['os2logging-type'][$nd->type] = array(
-        '#type' => 'checkbox',
-        '#title' => $nd->name,
-        '#default_value' => _os2logging_node_type_chosen($nd->type),
-    );
-  }
-
-  $form['#submit'][] = 'os2logging_settings_form_submit';
-  return system_settings_form($form);
-}
-
-function os2logging_settings_form_submit($form, &$form_state) {
-  $node_types = node_type_get_types();
-  $chosen_node_types = array();
-
-  foreach ($node_types as $n_type) {
-    if ( $form_state['values'][$n_type->type] == '1' )
-      {
-      $chosen_node_types[] = $n_type->type;
-      }
-  }
-  variable_set('os2logging_chosen_node_types', $chosen_node_types);
-  variable_set('os2logging_log_file_path', $form_state['values']['os2logging-file-path']);
-}
-
-function _os2logging_node_type_chosen($node_type) {
-  $types_list = variable_get('os2logging_chosen_node_types');
-  return (is_array($types_list) && in_array($node_type, $types_list));
 }
 
 /**
@@ -139,7 +108,7 @@ function os2logging_help($path, $arg) {
       if (module_exists('markdown')) {
         $filters = module_invoke('markdown', 'filter_info');
         $info = $filters['filter_markdown'];
-    
+
         if (function_exists($info['process callback'])) {
           $output = $info['process callback']($readme, NULL);
         }
@@ -173,7 +142,7 @@ function os2logging_watchdog(array $log_entry) {
 
 
    if (monolog_channel_info_load($log_entry['type']) ) {
-      
+
         $logger = monolog($log_entry['type']);
 
         if ('Psr\Log\NullLogger' != get_class($logger)) {
@@ -195,4 +164,39 @@ function os2logging_watchdog(array $log_entry) {
     // Fail silently since we cannot log any messages or do anything that would
     // trigger another watchdog call.
   }
+}
+
+/**
+ * Implements hook_monolog_handler_info().
+ */
+function os2logging_monolog_handler_info() {
+  $handlers = array();
+
+  $handlers['os2logging_accesslog'] = array(
+    'label' => t('OS2Logging AccessLog entity handler'),
+    'description' => t('Saves logs as OS2Logging AccessLog entities.'),
+    'handler file' => drupal_get_path('module', 'os2logging') . '/handlers/os2logging_accesslog.inc',
+    'group' => t('Wrappers / special handlers'),
+    'settings callback' => 'os2logging_accesslog_handler_settings',
+    'loader callback' => 'os2logging_accesslog_handler_loader',
+  );
+
+  $handlers['os2logging_json_rotation_file'] = array(
+    'label' => t('OS2Logging JSON Rotation file handler'),
+    'description' => t('Saves logs as JSON'),
+    'handler file' => drupal_get_path('module', 'os2logging') . '/handlers/json_rotating_file.inc',
+    'group' => t('Wrappers / special handlers'),
+    'settings callback' => 'os2logging_rotating_file_handler_settings',
+    'loader callback' => 'os2logging_rotating_file_handler_loader',
+  );
+
+  return $handlers;
+}
+
+/**
+ * Implements hook_cron().
+ */
+function os2logging_cron() {
+  module_load_include('inc', 'os2logging', 'includes/os2logging.access_log');
+  os2logging_access_log_cleanup();
 }
