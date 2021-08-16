@@ -24,10 +24,10 @@ function valghalla_volunteer_validator_update_all_validation_criteria_statuses()
     if (!empty($volunteers) && is_array($volunteers)) {
       foreach ($volunteers as $volunteer) {
         if ($old_criteria_status = valghalla_volunteer_validator_get_validation_criteria_status($volunteer->nid)) {
-          // Only update volunteers the weren't updated during today.
+          // Only update volunteers the weren't updated more than 3 days ago.
           // That means, that under normal conditions, every volunteer will be
-          // updated on a first cron run after midnight.
-          if ($old_criteria_status['timestamp'] > strtotime('today midnight', time())) {
+          // updated on a first cron run after midnight every 3 days.
+          if ($old_criteria_status['timestamp'] > strtotime('-3days 00:00:00', time())) {
             continue;
           }
         }

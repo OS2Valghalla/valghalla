@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "additional-bootstrap-colors": "^1.0.5",
-    "bootstrap-sass": "^3.4.0",
+    "bootstrap-sass": "^3.4.1",
     "bootstrap-sweetalert": "^1.0.1",
     "boxy-concept": "^1.0.1",
     "column-restrictor": "^1.0.1",
@@ -21,7 +21,7 @@
     "flexy-navigation": "^1.0.9",
     "flexy-row": "^1.0.0",
     "font-awesome": "^4.7.0",
-    "jquery": "^3.3.1",
+    "jquery": "^3.4.0",
     "jquery-slinky": "^3.0.0",
     "pace-bootstrap-theme": "^1.0.1",
     "pace-progress": "^1.0.2",

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * os2logging.monolog.inc
@@ -16,14 +17,21 @@ function os2logging_default_monolog_profiles() {
   $profile->name = 'os2logging';
   $profile->options = array(
     'handlers' => array(
-      'rotating_file_handler' => array(
-        'weight' => 1,
-        'label' => 'Rotating File Handler',
+      'os2logging_json_file_handler' => array(
+        'weight' => '-9',
+        'label' => 'OS2Logging JSON Rotation file handler',
         'level' => '200',
         'bubble' => 1,
-        'filepath' => 'private://log/node_access.log',
+        'filepath' => 'private://log/os2logging_node_access.log',
         'max_files' => '180',
-        'handler' => 'rotating_file',
+        'handler' => 'os2logging_json_rotation_file',
+      ),
+      'os2logging_accesslog_entity_hand' => array(
+        'weight' => '-8',
+        'label' => 'OS2Logging AccessLog entity handler',
+        'level' => '200',
+        'bubble' => '1',
+        'handler' => 'os2logging_accesslog',
       ),
     ),
     'label' => 'OS2Logging',

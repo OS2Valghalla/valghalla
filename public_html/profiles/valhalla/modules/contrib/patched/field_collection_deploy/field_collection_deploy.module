@@ -179,7 +179,7 @@ function field_collection_deploy_import_field_collection($node, $field_collectio
 
       $entity_controller = new EntityAPIController("field_collection_item");
       $item['item_id'] = NULL;
-      $item['original'] = TRUE;
+      //$item['original'] = TRUE;
       $item_encoded = drupal_json_encode($item);
 
       $entity = $entity_controller->import($item_encoded);

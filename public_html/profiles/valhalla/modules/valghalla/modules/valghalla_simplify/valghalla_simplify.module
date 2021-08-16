@@ -1,0 +1,8 @@
+<?php
+
+/**
+ * @file
+ * Code for the Valghalla Simplify feature.
+ */
+
+include_once 'valghalla_simplify.features.inc';

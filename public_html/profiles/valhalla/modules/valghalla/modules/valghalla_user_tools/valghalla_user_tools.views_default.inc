@@ -135,12 +135,12 @@ function valghalla_user_tools_views_default_views() {
   $handler->display->display_options['fields']['changed']['field'] = 'changed';
   $handler->display->display_options['fields']['changed']['date_format'] = 'custom';
   $handler->display->display_options['fields']['changed']['custom_date_format'] = 'd.m.y';
-  /* Felt: Indhold: Udgivet */
+  /* Felt: Indhold: Published status */
   $handler->display->display_options['fields']['status']['id'] = 'status';
   $handler->display->display_options['fields']['status']['table'] = 'node';
   $handler->display->display_options['fields']['status']['field'] = 'status';
   $handler->display->display_options['fields']['status']['not'] = 0;
-  /* Felt: Indhold: Redigér-link */
+  /* Felt: Indhold: Link to edit content */
   $handler->display->display_options['fields']['edit_node']['id'] = 'edit_node';
   $handler->display->display_options['fields']['edit_node']['table'] = 'views_entity_node';
   $handler->display->display_options['fields']['edit_node']['field'] = 'edit_node';
@@ -278,7 +278,7 @@ function valghalla_user_tools_views_default_views() {
     t('sidste »'),
     t('CPR nummer'),
     t('Opdateringsdato'),
-    t('Udgivet'),
+    t('Published status'),
     t('Redigér'),
     t('Parti'),
     t('Alle'),
@@ -349,10 +349,19 @@ function valghalla_user_tools_views_default_views() {
   $handler->display->display_options['fields']['type']['id'] = 'type';
   $handler->display->display_options['fields']['type']['table'] = 'node';
   $handler->display->display_options['fields']['type']['field'] = 'type';
+  /* Felt: eBoks emne (hidden) */
+  $handler->display->display_options['fields']['field_eboks_subject']['id'] = 'field_eboks_subject';
+  $handler->display->display_options['fields']['field_eboks_subject']['table'] = 'field_data_field_eboks_subject';
+  $handler->display->display_options['fields']['field_eboks_subject']['field'] = 'field_eboks_subject';
+  $handler->display->display_options['fields']['field_eboks_subject']['ui_name'] = 'eBoks emne (hidden)';
+  $handler->display->display_options['fields']['field_eboks_subject']['label'] = '';
+  $handler->display->display_options['fields']['field_eboks_subject']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['field_eboks_subject']['element_label_colon'] = FALSE;
   /* Felt: Indhold: Emne */
   $handler->display->display_options['fields']['field_subject']['id'] = 'field_subject';
   $handler->display->display_options['fields']['field_subject']['table'] = 'field_data_field_subject';
   $handler->display->display_options['fields']['field_subject']['field'] = 'field_subject';
+  $handler->display->display_options['fields']['field_subject']['empty'] = '[field_eboks_subject]';
   /* Felt: Indhold: Body */
   $handler->display->display_options['fields']['body']['id'] = 'body';
   $handler->display->display_options['fields']['body']['table'] = 'field_data_body';
@@ -364,7 +373,7 @@ function valghalla_user_tools_views_default_views() {
   $handler->display->display_options['fields']['body']['settings'] = array(
     'trim_length' => '200',
   );
-  /* Felt: Indhold: Redigér-link */
+  /* Felt: Indhold: Link to edit content */
   $handler->display->display_options['fields']['edit_node']['id'] = 'edit_node';
   $handler->display->display_options['fields']['edit_node']['table'] = 'views_entity_node';
   $handler->display->display_options['fields']['edit_node']['field'] = 'edit_node';
@@ -373,7 +382,7 @@ function valghalla_user_tools_views_default_views() {
   $handler->display->display_options['sorts']['created']['table'] = 'node';
   $handler->display->display_options['sorts']['created']['field'] = 'created';
   $handler->display->display_options['sorts']['created']['order'] = 'DESC';
-  /* Filterkriterie: Indhold: Udgivet */
+  /* Filterkriterie: Indhold: Published status */
   $handler->display->display_options['filters']['status']['id'] = 'status';
   $handler->display->display_options['filters']['status']['table'] = 'node';
   $handler->display->display_options['filters']['status']['field'] = 'status';
@@ -432,6 +441,7 @@ function valghalla_user_tools_views_default_views() {
     t('<a class="btn btn-success" href="/valghalla/administration/notifications/add?destination=valghalla/administration/mail-skabeloner">+ Tilføj skabelon</a>'),
     t('Type'),
     t('Emne'),
+    t('[field_eboks_subject]'),
     t('Brødtekst'),
     t('Redigér'),
     t('Page'),
@@ -609,7 +619,7 @@ function valghalla_user_tools_views_default_views() {
   $handler->display->display_options['fields']['field_role_hours']['id'] = 'field_role_hours';
   $handler->display->display_options['fields']['field_role_hours']['table'] = 'field_data_field_role_hours';
   $handler->display->display_options['fields']['field_role_hours']['field'] = 'field_role_hours';
-  /* Felt: Indhold: Role Rækkefølge */
+  /* Felt: Indhold: Valgsted Rækkefølge */
   $handler->display->display_options['fields']['field_role_weight']['id'] = 'field_role_weight';
   $handler->display->display_options['fields']['field_role_weight']['table'] = 'field_data_field_role_weight';
   $handler->display->display_options['fields']['field_role_weight']['field'] = 'field_role_weight';
@@ -620,11 +630,11 @@ function valghalla_user_tools_views_default_views() {
     'scale' => '2',
     'prefix_suffix' => 0,
   );
-  /* Felt: Indhold: Redigér-link */
+  /* Felt: Indhold: Link to edit content */
   $handler->display->display_options['fields']['edit_node']['id'] = 'edit_node';
   $handler->display->display_options['fields']['edit_node']['table'] = 'views_entity_node';
   $handler->display->display_options['fields']['edit_node']['field'] = 'edit_node';
-  /* Sorteringskriterie: Indhold: Role Rækkefølge (field_role_weight) */
+  /* Sorteringskriterie: Indhold: Valgsted Rækkefølge (field_role_weight) */
   $handler->display->display_options['sorts']['field_role_weight_value']['id'] = 'field_role_weight_value';
   $handler->display->display_options['sorts']['field_role_weight_value']['table'] = 'field_data_field_role_weight';
   $handler->display->display_options['sorts']['field_role_weight_value']['field'] = 'field_role_weight_value';
@@ -632,7 +642,7 @@ function valghalla_user_tools_views_default_views() {
   $handler->display->display_options['sorts']['title']['id'] = 'title';
   $handler->display->display_options['sorts']['title']['table'] = 'node';
   $handler->display->display_options['sorts']['title']['field'] = 'title';
-  /* Filterkriterie: Indhold: Udgivet */
+  /* Filterkriterie: Indhold: Published status */
   $handler->display->display_options['filters']['status']['id'] = 'status';
   $handler->display->display_options['filters']['status']['table'] = 'node';
   $handler->display->display_options['filters']['status']['field'] = 'status';
@@ -860,7 +870,7 @@ function valghalla_user_tools_views_default_views() {
   $handler->display->display_options['fields']['mail']['table'] = 'users';
   $handler->display->display_options['fields']['mail']['field'] = 'mail';
   $handler->display->display_options['fields']['mail']['element_label_colon'] = FALSE;
-  /* Felt: Bruger: Aktiv */
+  /* Felt: Bruger: Active status */
   $handler->display->display_options['fields']['status']['id'] = 'status';
   $handler->display->display_options['fields']['status']['table'] = 'users';
   $handler->display->display_options['fields']['status']['field'] = 'status';
@@ -881,12 +891,12 @@ function valghalla_user_tools_views_default_views() {
   $handler->display->display_options['fields']['access']['table'] = 'users';
   $handler->display->display_options['fields']['access']['field'] = 'access';
   $handler->display->display_options['fields']['access']['date_format'] = 'time ago';
-  /* Felt: Bruger: Redigér-link */
+  /* Felt: Bruger: Link to edit user */
   $handler->display->display_options['fields']['edit_node']['id'] = 'edit_node';
   $handler->display->display_options['fields']['edit_node']['table'] = 'users';
   $handler->display->display_options['fields']['edit_node']['field'] = 'edit_node';
   $handler->display->display_options['fields']['edit_node']['label'] = 'Handlinger';
-  /* Felt: Bruger: Annullér-link */
+  /* Felt: Bruger: Link to cancel user */
   $handler->display->display_options['fields']['cancel_node']['id'] = 'cancel_node';
   $handler->display->display_options['fields']['cancel_node']['table'] = 'users';
   $handler->display->display_options['fields']['cancel_node']['field'] = 'cancel_node';
@@ -930,7 +940,7 @@ function valghalla_user_tools_views_default_views() {
     'field_full_name' => 'field_full_name',
     'mail' => 'mail',
   );
-  /* Filterkriterie: Bruger: Aktiv */
+  /* Filterkriterie: Bruger: Active status */
   $handler->display->display_options['filters']['status']['id'] = 'status';
   $handler->display->display_options['filters']['status']['table'] = 'users';
   $handler->display->display_options['filters']['status']['field'] = 'status';
@@ -984,13 +994,14 @@ function valghalla_user_tools_views_default_views() {
     t('Brugernavn'),
     t('Fulde navn'),
     t('E-mail'),
-    t('Aktiv'),
+    t('Active status'),
     t('Roller'),
     t('Medlem i'),
     t('Seneste tilgang'),
     t('Handlinger'),
     t('Brugetnavn/fulde navn/email'),
     t('Kombinér felter filter'),
+    t('Aktiv'),
     t('Rolle'),
     t('System'),
   );

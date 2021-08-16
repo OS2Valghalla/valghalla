@@ -52,11 +52,6 @@ function valghalla_signup_administration_form() {
     '#type' => 'checkbox',
     '#default_value' => variable_get('valghalla_signup_enable', FALSE),
   );
-  $form['valghalla_signup_addrss_validation_disable'] = array(
-    '#title' => t('Disables address field validation'),
-    '#type' => 'checkbox',
-    '#default_value' => variable_get('valghalla_signup_addrss_validation_disable', FALSE),
-  );
 
   $form['valghalla_signup_page_title'] = array(
     '#title' => t('Titel på tilmeldingside'),
@@ -120,6 +115,37 @@ function valghalla_signup_administration_form() {
     '#default_value' => variable_get('valghalla_signup_closed_message', ''),
   );
 
+  $form['valghalla_signup_validation'] = array(
+    '#title' => t('Validation'),
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+
+  $form['valghalla_signup_validation']['valghalla_signup_fields_birthday_required'] = array(
+    '#title' => t('Fødselsdagsfelt er påkrævet'),
+    '#type' => 'checkbox',
+    '#default_value' => variable_get('valghalla_signup_fields_birthday_required', TRUE),
+  );
+
+  $form['valghalla_signup_validation']['valghalla_signup_fields_address_required'] = array(
+    '#title' => t('Adressefelter er påkrævet'),
+    '#type' => 'checkbox',
+    '#default_value' => variable_get('valghalla_signup_fields_address_required', TRUE),
+  );
+
+  $form['valghalla_signup_validation']['valghalla_signup_addrss_validation_disable'] = array(
+    '#title' => t('Disables address field validation'),
+    '#type' => 'checkbox',
+    '#default_value' => variable_get('valghalla_signup_addrss_validation_disable', FALSE),
+  );
+
+  $form['valghalla_signup_validation']['valghalla_signup_fields_comment_display'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Vis Evt. besked feltet'),
+    '#default_value' => variable_get('valghalla_signup_fields_comment_display', TRUE),
+  );
+
   global $base_url;
   $url = $base_url . '/valghalla/signup';
   $form['valghalla_signup_description'] = array(
@@ -180,6 +206,12 @@ function valghalla_signup_init() {
 function valghalla_signup_signup_form($form, &$form_state) {
   $election_nid = variable_get('valghalla_signup_election_nid', FALSE);
   $election_node = node_load($election_nid);
+
+  if (!$election_node) {
+    $form['no_results']['#markup'] = '<div class="no-results">' . t('Der findes ingen valg som er aktiv') . '</div>';
+    return $form;
+  }
+
   $signup_roles = variable_get('valghalla_signup_roles', array());
   $role_options = array('Vælg rolle');
 
@@ -265,7 +297,7 @@ function valghalla_signup_signup_form($form, &$form_state) {
 
     if ($pollingstations = odin_get_signup_available_polling_stations($election_nid, $qty, $role_nid)) {
 
-      array_unshift($pollingstations, 'Vælg valgsted');
+      array_unshift($pollingstations, 'Vælg');
       $form['pollingstation_nid'] = array(
         '#type' => 'select',
         '#title' => t('Valgsteder - Med ledige pladser'),
@@ -273,6 +305,11 @@ function valghalla_signup_signup_form($form, &$form_state) {
       );
 
       $form['volunteers']['#tree'] = TRUE;
+
+      $address_required = variable_get('valghalla_signup_fields_address_required', TRUE);
+      $birthday_required = variable_get('valghalla_signup_fields_birthday_required', TRUE);
+      $comment_display = variable_get('valghalla_signup_fields_comment_display', TRUE);
+
       for ($i = 1; $i <= $qty; $i++) {
         $form['volunteers'][$i] = array(
           '#type' => 'fieldset',
@@ -288,13 +325,17 @@ function valghalla_signup_signup_form($form, &$form_state) {
         $form['volunteers'][$i]['birthdate'] = array(
           '#title' => t('Fødselsdato'),
           '#type' => 'date',
-          '#required' => TRUE,
+          '#required' => $birthday_required,
           '#date_format' => 'd-m-Y',
           '#pre_render' => array('_valghalla_signup_birthdate_pre_render'),
         );
 
+        if (!$birthday_required) {
+          $form['volunteers'][$i]['birthdate']['#element_validate'] = array('valghalla_signup_birthdate_element_validate');
+        }
+
         $form['volunteers'][$i]['zipcode'] = array(
-          '#required' => TRUE,
+          '#required' => $address_required,
           '#title' => t('Postnummer'),
           '#type' => 'textfield',
           '#prefix' => '<div class="row"><div class="col-sm-6">',
@@ -304,7 +345,7 @@ function valghalla_signup_signup_form($form, &$form_state) {
         $form['volunteers'][$i]['city'] = array(
           '#title' => t('By'),
           '#type' => 'textfield',
-          '#required' => TRUE,
+          '#required' => $address_required,
           '#prefix' => '<div class="col-sm-6">',
           '#suffix' => '</div></div>',
           '#attributes' => (!variable_get('valghalla_signup_addrss_validation_disable', FALSE)) ? array('readonly' => 'readonly') : array(),
@@ -313,13 +354,13 @@ function valghalla_signup_signup_form($form, &$form_state) {
         $form['volunteers'][$i]['road'] = array(
           '#title' => t('Vejnavn'),
           '#type' => 'textfield',
-          '#required' => TRUE,
+          '#required' => $address_required,
           '#prefix' => '<div class="row"><div class="col-sm-6">',
           '#suffix' => '</div>',
         );
 
         $form['volunteers'][$i]['road_no'] = array(
-          '#required' => TRUE,
+          '#required' => $address_required,
           '#title' => t('Husnummer'),
           '#type' => 'textfield',
           '#prefix' => '<div class="col-sm-2">',
@@ -356,10 +397,12 @@ function valghalla_signup_signup_form($form, &$form_state) {
           '#suffix' => '</div></div>',
         );
 
-        $form['volunteers'][$i]['comment'] = array(
-          '#title' => t('Evt. besked'),
-          '#type' => 'textarea',
-        );
+        if ($comment_display) {
+          $form['volunteers'][$i]['comment'] = array(
+            '#title' => t('Evt. besked'),
+            '#type' => 'textarea',
+          );
+        }
       }
 
       $form['submit'] = array(
@@ -369,11 +412,28 @@ function valghalla_signup_signup_form($form, &$form_state) {
     }
     else {
       $form['no_results']['#markup'] = '<div class="no-results">' . t('Der findes ingen valgsteder med det antal ledige pladser') . '</div>';
-
     }
   }
 
   return $form;
+}
+
+/**
+ * Validator for date element.
+ *
+ * Adds for error if values are incorrect.
+ * Allows empty values.
+ */
+function valghalla_signup_birthdate_element_validate($element, &$form, &$form_state) {
+  // Only give error if not empty and format doet not match.
+  if ($element['#value']) {
+    if (!preg_match('/\d+/', $element['#value']['day']) || !preg_match('/\d+/', $element['#value']['month']) || !preg_match('/\d+/', $element['#value']['year'])) {
+      dpm(preg_match('/\d+/', $element['#value']['day']));
+      dpm(preg_match('/\d+/', $element['#value']['month']));
+      dpm(preg_match('/\d+/', $element['#value']['year']));
+      form_error($element, t('Invalid format'));
+    }
+  }
 }
 
 /**
@@ -401,6 +461,8 @@ function valghalla_signup_signup_form_validate($form, &$form_state) {
       form_set_error('pollingstation_nid', 'Du skal vælge et valgsted.');
     }
 
+    $address_required = variable_get('valghalla_signup_fields_address_required', TRUE);
+
     foreach ($form_state['values']['volunteers'] as $id => $volunteer) {
       if (!valid_email_address($volunteer['email'])) {
         form_set_error($id . '][email]', 'Ikke gyldig emailadresse');
@@ -408,11 +470,13 @@ function valghalla_signup_signup_form_validate($form, &$form_state) {
       if (strlen((int) $volunteer['phone']) != 8) {
         form_set_error('volunteers][' . $id . '][phone', 'Ikke gyldigt telefonnummer.');
       }
-      if (strlen((int) $volunteer['zipcode']) != 4) {
-        form_set_error('volunteers][' . $id . '][zipcode', 'Ikke gyldigt postnummer.');
-      }
-      if (strlen((int) $volunteer['road_no']) < 1 || $volunteer['road_no'] == 0) {
-        form_set_error('volunteers][' . $id . '][road_no', 'Ikke gyldigt husnummer.');
+      if ($address_required) {
+        if (strlen((int) $volunteer['zipcode']) != 4) {
+          form_set_error('volunteers][' . $id . '][zipcode', 'Ikke gyldigt postnummer.');
+        }
+        if (strlen((int) $volunteer['road_no']) < 1 || $volunteer['road_no'] == 0) {
+          form_set_error('volunteers][' . $id . '][road_no', 'Ikke gyldigt husnummer.');
+        }
       }
       if (!variable_get('valghalla_signup_addrss_validation_disable', FALSE)) {
         $url = 'https://dawa.aws.dk/adresser?vejnavn=' . urlencode($volunteer['road']) . '&husnr=' . $volunteer['road_no'] . '&postnr=' . $volunteer['zipcode'];
@@ -475,20 +539,34 @@ function valghalla_signup_add_volunteer($volunteer, $polling_station_nid) {
   $volunteer_node->status = 1;
 
   $volunteer_node->title = $volunteer['name'];
-
-  $cpr = str_pad($volunteer['birthdate']['day'], 2, 0, STR_PAD_LEFT)
-         . str_pad($volunteer['birthdate']['month'], 2, 0, STR_PAD_LEFT)
-         . (substr($volunteer['birthdate']['year'], -2) - 1);
-
   $volunteer_party_tid = variable_get('valghalla_signup_party_tid', FALSE);
 
-  $volunteer_node->field_cpr_number[LANGUAGE_NONE][]['value'] = $cpr;
-  $volunteer_node->field_address_road[LANGUAGE_NONE][]['value'] = $volunteer['road'];
-  $volunteer_node->field_address_road_no[LANGUAGE_NONE][]['value'] = $volunteer['road_no'];
-  $volunteer_node->field_address_floor[LANGUAGE_NONE][]['value'] = $volunteer['floor'];
-  $volunteer_node->field_address_door[LANGUAGE_NONE][]['value'] = $volunteer['door'];
-  $volunteer_node->field_address_zipcode[LANGUAGE_NONE][]['value'] = $volunteer['zipcode'];
-  $volunteer_node->field_address_city[LANGUAGE_NONE][]['value'] = $volunteer['city'];
+  if ($volunteer['birthdate']['day'] && $volunteer['birthdate']['month'] && $volunteer['birthdate']['year']) {
+    $cpr = str_pad($volunteer['birthdate']['day'], 2, 0, STR_PAD_LEFT)
+      . str_pad($volunteer['birthdate']['month'], 2, 0, STR_PAD_LEFT)
+      . (substr($volunteer['birthdate']['year'], -2) - 1);
+    $volunteer_node->field_cpr_number[LANGUAGE_NONE][]['value'] = $cpr;
+  }
+
+  if ($volunteer['road']) {
+    $volunteer_node->field_address_road[LANGUAGE_NONE][]['value'] = $volunteer['road'];
+  }
+  if ($volunteer['road_no']) {
+    $volunteer_node->field_address_road_no[LANGUAGE_NONE][]['value'] = $volunteer['road_no'];
+  }
+  if ($volunteer['floor']) {
+    $volunteer_node->field_address_floor[LANGUAGE_NONE][]['value'] = $volunteer['floor'];
+  }
+  if ($volunteer['door']) {
+    $volunteer_node->field_address_door[LANGUAGE_NONE][]['value'] = $volunteer['door'];
+  }
+  if ($volunteer['zipcode']) {
+    $volunteer_node->field_address_zipcode[LANGUAGE_NONE][]['value'] = $volunteer['zipcode'];
+  }
+  if ($volunteer['city']) {
+    $volunteer_node->field_address_city[LANGUAGE_NONE][]['value'] = $volunteer['city'];
+  }
+
   $volunteer_node->field_email[LANGUAGE_NONE][]['email'] = $volunteer['email'];
   $volunteer_node->field_phone[LANGUAGE_NONE][]['value'] = $volunteer['phone'];
   $volunteer_node->field_party[LANGUAGE_NONE][]['tid'] = $volunteer_party_tid;
