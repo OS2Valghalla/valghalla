@@ -251,19 +251,10 @@ function valghalla_volunteer_validator_node_validate($node, $form, &$form_state)
     $party = taxonomy_term_load($party_tid);
   }
 
-  // Run validator.
-  if (empty($election) && empty($party)) {
-    $messages = valghalla_volunteer_validator_query_service('validate_cpr', $cpr);
-    $messages = array_merge($messages, valghalla_volunteer_validator_validate($node));
-  }
-  else {
-    $election_config = valghalla_volunteer_validator_get_election_config($election, $party);
-    $messages = valghalla_volunteer_validator_query_service('validate_cpr_per_election', $cpr, $election_config);
-    $field_election_date = field_get_items('node', $election, 'field_date');
-    if ($election_config['validate_age'] && !empty($field_election_date[0]['value'])) {
-      $messages = array_merge($messages, valghalla_volunteer_validator_validate_service('validate_per_election', $cpr, array('election_date' => $field_election_date[0]['value'])));
-    }
-  }
+  // Run CPR validation.
+  $messages = _valghalla_volunteer_validator_cpr_validation($cpr, $election, $party);
+  // Run Volunteer validation.
+  $messages = array_merge($messages, valghalla_volunteer_validator_validate($node));
 
   if (isset($messages) && is_array($messages)) {
     foreach ($messages as $message) {
@@ -272,6 +263,39 @@ function valghalla_volunteer_validator_node_validate($node, $form, &$form_state)
       }
     }
   }
+}
+
+/**
+ * Runs validation against CPR.
+ *
+ * @param string $cpr
+ *   CPR number.
+ * @param mixed $election
+ *   Election node, can be null.
+ * @param mixed $party
+ *   Party taxonomy term, can be null
+ *
+ * @return array
+ *   List validation problems.
+ *   If empty - validation there is no validation problems.
+ */
+function _valghalla_volunteer_validator_cpr_validation($cpr, $election = NULL, $party = NULL) {
+  // Run generic CPR validator or use election and party as context
+  // (if available).
+  if (empty($election) && empty($party)) {
+    $messages = valghalla_volunteer_validator_query_service('validate_cpr', $cpr);
+  }
+  else {
+    $election_config = valghalla_volunteer_validator_get_election_config($election, $party);
+    $messages = valghalla_volunteer_validator_query_service('validate_cpr_per_election', $cpr, $election_config);
+
+    $field_election_date = field_get_items('node', $election, 'field_date');
+    if ($election_config['validate_age'] && !empty($field_election_date[0]['value'])) {
+      $messages = array_merge($messages, valghalla_volunteer_validator_validate_service('validate_per_election', $cpr, array('election_date' => $field_election_date[0]['value'])));
+    }
+  }
+
+  return $messages;
 }
 
 /**
