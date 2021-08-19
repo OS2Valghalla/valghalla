@@ -510,6 +510,8 @@ function valghalla_external_server_signup_terminate_signup($terminate_code = 0) 
  */
 function valghalla_external_server_signup_signup_form_validate($form, &$form_state) {
   $cpr = $form_state['values']['cpr'];
+  $election_nid = $form_state['election']->nid;
+  $party_tid = $form_state['party']->tid;
 
   // Adding dash, if missing. E.g. 123456-7890.
   if (preg_match('/^[0-9]{10}$/', $cpr)) {
@@ -547,14 +549,27 @@ function valghalla_external_server_signup_signup_form_validate($form, &$form_sta
 
   if (strcmp($form_state['triggering_element']['#type'], 'submit') === 0) {
     // Check place availability.
-    $election_nid = $form_state['election']->nid;
-    $party_tid = $form_state['party']->tid;
     $role_nid = isset($form_state['role']->nid) ? $form_state['role']->nid : $form_state['values']['role_select'];
     $polling_station_nid = isset($form_state['polling_station']) ? $form_state['polling_station']->nid : $form_state['values']['polling_station_select'];
 
     if ($election_nid && $party_tid && $role_nid && $polling_station_nid) {
       if (!_valghalla_external_server_signup_check_place_is_available($election_nid, $party_tid, $role_nid, $polling_station_nid)) {
         form_set_error('', t('Pladserne er desværre blevet optaget'));
+      }
+    }
+  }
+
+  if (module_exists('valghalla_volunteer_validator')) {
+    // Run CPR validation.
+    $election = node_load($election_nid);
+    $party = taxonomy_term_load($party_tid);
+    $messages = _valghalla_volunteer_validator_cpr_validation($cpr, $election, $party);
+
+    if (isset($messages) && is_array($messages)) {
+      foreach ($messages as $message) {
+        if ($message['status'] === FALSE) {
+          form_set_error('', t('Det angivne CPR-nummer kan ikke valideres: @text', array('@text' => $message['text'])));
+        }
       }
     }
   }
