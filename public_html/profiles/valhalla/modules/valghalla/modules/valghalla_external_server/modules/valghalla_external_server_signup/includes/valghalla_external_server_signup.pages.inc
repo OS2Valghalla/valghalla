@@ -517,6 +517,7 @@ function valghalla_external_server_signup_signup_form_validate($form, &$form_sta
   if (preg_match('/^[0-9]{10}$/', $cpr)) {
     $cpr = substr($cpr, 0, 6) . '-' . substr($cpr, 6, 4);
     $form_state['input']['cpr'] = $cpr;
+    form_set_value($form['cpr'], $cpr, $form_state);
   }
   if (!preg_match('/[0-9]{6}-[0-9]{4}/', $cpr)) {
     form_set_error('cpr', t('Forkert CPR-format, korrekt format er 123456-7890'));
