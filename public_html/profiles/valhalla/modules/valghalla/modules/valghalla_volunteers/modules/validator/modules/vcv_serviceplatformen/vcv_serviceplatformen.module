@@ -125,7 +125,7 @@ function vcv_serviceplatformen_settings() {
     '#default_value' => variable_get('vcv_serviceplatformen_location', ''),
     '#description' => t('ex. https://exttest.serviceplatformen.dk/service/CPRBasicInformation/CPRBasicInformation/1'),
   );
-  
+
   $form['adrsog'] = array(
     '#title' => 'ADRSOG1',
     '#type' => 'fieldset',
@@ -301,18 +301,10 @@ function vcv_serviceplatformen_query($cpr) {
     $pnr = str_replace('-', '', $cpr);
 
     $request = array(
-      'InvocationContext' => array(
-        'ServiceAgreementUUID' => $serviceagreementuuid,
-        'UserSystemUUID' => $usersystemuuid,
-        'UserUUID' => $useruuid,
-        'ServiceUUID' => $serviceuuid,
-        'AccountingInfo' => $accountinginfo,
-        'OnBehalfOfUser' => $onbehalfofuser,
-      ),
-      'PNR' => $pnr,
+      'searchParameter' => 'cprnummer:' . $pnr . '&amp;rows=250&amp;defType=edismax',
     );
 
-    $response = (array) $client->callCPRBasicInformationService($request);
+    $response = (array) $client->callCPRPersonList($request);
 
     $response['status'] = TRUE;
     return $response;
