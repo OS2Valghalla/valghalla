@@ -86,7 +86,7 @@ function valghalla_external_server_signup_signup_form($form, &$form_state) {
   }
 
   $cprProvider = variable_get('valghalla_external_server_signup_cpr_provider', 'nemlogin');
-
+  $form['#cpr_provider'] = $cprProvider;
   if ($cprProvider == 'nemlogin') {
     // Attempt to fetch CPR from session.
     if (module_exists('nemlogin')) {
@@ -347,7 +347,6 @@ function valghalla_external_server_signup_signup_form($form, &$form_state) {
   // Making the replacements.
   if ($form_mode) {
     $replacements = valghalla_external_server_signup_get_form_replacements($form_mode, $form_state);
-
     $form['#upper_text'] = variable_get('valghalla_external_server_signup_text_' . $form_mode . '_upper');
     $form['#bottom_text'] = variable_get('valghalla_external_server_signup_text_' . $form_mode . '_bottom');
     $tokens = array_keys(_valghalla_external_server_signup_text_get_replacement_tokens($form_mode));
