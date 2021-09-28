@@ -296,7 +296,7 @@ class ExternalWebservice {
     $options['headers'] = array();
     $options['headers']['Authorization'] = $this->authToken;
     $options['headers']['Content-Type'] = 'application/json';
-    $options['timeout'] = 60;
+    $options['timeout'] = 180;
 
     $result = drupal_http_request($requestUrl, $options);
 
