@@ -7,6 +7,50 @@
 include_once 'valghalla_tfa.features.inc';
 
 /**
+ * Implements hook_menu().
+ */
+function valghalla_tfa_menu() {
+  $items['admin/valghalla/valghalla_tfa'] = array(
+    'title' => t('Valghalla SMS (TFA)'),
+    'description' => t('Counter of sent SMS messages via TFA'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('valghalla_tfa_sms_message_report_form_year'),
+    'access arguments' => array('valghalla_tfa sms reports'),
+    'file' => 'includes/valghalla_tfa.admin.inc',
+  );
+
+  $items['admin/valghalla/valghalla_tfa/year'] = array(
+    'title' => t('Årlige rapporter'),
+    'description' => t('Counter of sent SMS messages via TFA (yearly)'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );
+
+  $items['admin/valghalla/valghalla_tfa/custom'] = array(
+    'title' => t('Tilpassede rapporter'),
+    'description' => t('Counter of sent SMS messages via TFA (custom)'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('valghalla_tfa_sms_message_report_form_custom'),
+    'access arguments' => array('valghalla_tfa sms reports'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'includes/valghalla_tfa.admin.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function valghalla_tfa_permission() {
+  return array(
+    'valghalla_tfa sms reports' => array(
+      'title' => t('Valghalla TFA see SMS reports'),
+    ),
+  );
+}
+
+/**
  * Implements hook_tfa_api().
  */
 function valghalla_tfa_tfa_api() {
@@ -22,10 +66,63 @@ function valghalla_tfa_tfa_api() {
  * Create TfaTrustedBrowser plugin.
  *
  * @param array $context
- * @return TfaTrustedBrowser
+ * @return TfaTrustedIp
  */
 function valghalla_tfa_trusted_ip_create($context) {
   return new TfaTrustedIp($context);
+}
+
+/**
+ * Implements hook_form_alter().
+ *
+ * Adds custom submit handler for SMS sending related functions.
+ */
+function valghalla_tfa_form_alter(&$form, &$form_state, $form_id) {
+  // Form Id's we are interested in: tfa_basic_setup_form, tfa_form, user_login
+  // and user_login_block
+  if ($form_id == 'tfa_basic_setup_form') {
+    $form['send']['#submit'][]  = 'valghalla_tfa_submit_sms_sent';
+  }
+
+  if ($form_id == 'tfa_form') {
+    $form['actions']['resend']['#submit'][]  = 'valghalla_tfa_submit_sms_sent';
+  }
+
+  if ($form_id == 'user_login' || $form_id == 'user_login_block') {
+    $form['#submit'][] = 'valghalla_tfa_login_submit';
+  }
+}
+
+/**
+ * @param $form
+ * @param $form_state
+ */
+function valghalla_tfa_login_submit($form, &$form_state) {
+  if (isset($form_state['tfa_redirect'])) {
+    valghalla_tfa_submit_sms_sent($form, $form_state);
+  }
+}
+
+/**
+ * Custom trigger for SMS being sent.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function valghalla_tfa_submit_sms_sent($form, &$form_state) {
+  // Attempting to find a user who is receiving the SMS.
+  $user = NULL;
+  if ($form_state['build_info']['args'][0]) {
+    $user = $form_state['build_info']['args'][0];
+  }
+  else {
+    if (isset($form_state['uid'])) {
+      $user = user_load($form_state['uid']);
+    }
+  }
+
+  module_load_include('inc', 'valghalla_tfa', 'includes/valghalla_tfa.sms_message');
+  valghalla_tfa_sms_message_create($user);
 }
 
 /**
