@@ -6,39 +6,41 @@ module_load_include('inc', 'os2logging', 'includes/os2logging.access_log');
  * Valghalla TFA SMS Message report form.
  */
 function valghalla_tfa_sms_message_report_form_year($form, &$form_state) {
-  $day_options = array();
-  for ($i = 1; $i <= 31; $i++) {
-    $day_options[$i] = $i;
+  if (user_access('administer valghalla')) {
+    $day_options = [];
+    for ($i = 1; $i <= 31; $i++) {
+      $day_options[$i] = $i;
+    }
+
+    $month_options = [];
+    for ($i = 1; $i <= 12; $i++) {
+      $month_options[$i] = $i;
+    }
+
+    $form['valghalla_tfa_year_period_date_day'] = [
+      '#type' => 'select',
+      '#title' => t('Periode start (dag)'),
+      '#default_value' => variable_get('valghalla_tfa_year_period_date_day', 1),
+      '#options' => $day_options,
+      '#prefix' => '<div class="row form-group"><div class="col-md-3 col-sm-3">',
+      '#suffix' => '</div>'
+    ];
+    $form['valghalla_tfa_year_period_date_month'] = [
+      '#type' => 'select',
+      '#title' => t('Periode start (måned)'),
+      '#default_value' => variable_get('valghalla_tfa_year_period_date_month', 1),
+      '#options' => $month_options,
+      '#prefix' => '<div class="col-md-3 col-sm-6">',
+      '#suffix' => '</div></div>'
+    ];
+
+    $form['submit'] = [
+      '#type' => 'submit',
+      '#value' => t('Beregn'),
+      '#prefix' => '<div class="form-group">',
+      '#suffix' => '</div>'
+    ];
   }
-
-  $month_options = array();
-  for ($i = 1; $i <= 12; $i++) {
-    $month_options[$i] = $i;
-  }
-
-  $form['valghalla_tfa_year_period_date_day'] = array(
-    '#type' => 'select',
-    '#title' => t('Periode start (dag)'),
-    '#default_value' => variable_get('valghalla_tfa_year_period_date_day', 1),
-    '#options' => $day_options,
-    '#prefix' => '<div class="row form-group"><div class="col-md-2 col-sm-3">',
-    '#suffix' => '</div>'
-  );
-  $form['valghalla_tfa_year_period_date_month'] = array(
-    '#type' => 'select',
-    '#title' => t('Periode start (måned)'),
-    '#default_value' => variable_get('valghalla_tfa_year_period_date_month', 1),
-    '#options' => $month_options,
-    '#prefix' => '<div class="col-md-2 col-sm-6">',
-    '#suffix' => '</div></div>'
-  );
-
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Beregn'),
-    '#prefix' => '<div class="form-group">',
-    '#suffix' => '</div>'
-  );
 
   $header = array(
     'period' => array(
@@ -50,6 +52,7 @@ function valghalla_tfa_sms_message_report_form_year($form, &$form_state) {
       'type' => 'property',
     ),
   );
+
 
   // Start date or period.
   $date = new DateTime();
