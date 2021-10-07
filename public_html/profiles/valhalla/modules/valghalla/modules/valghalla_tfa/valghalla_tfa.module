@@ -81,6 +81,7 @@ function valghalla_tfa_form_alter(&$form, &$form_state, $form_id) {
   // Form Id's we are interested in: tfa_basic_setup_form, tfa_form, user_login
   // and user_login_block
   if ($form_id == 'tfa_basic_setup_form') {
+    $form['send']['#submit'][]  = 'tfa_basic_setup_form_submit';
     $form['send']['#submit'][]  = 'valghalla_tfa_submit_sms_sent';
   }
 
