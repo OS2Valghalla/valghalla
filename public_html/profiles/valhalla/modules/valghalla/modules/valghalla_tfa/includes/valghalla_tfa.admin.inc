@@ -6,7 +6,9 @@ module_load_include('inc', 'os2logging', 'includes/os2logging.access_log');
  * Valghalla TFA SMS Message report form.
  */
 function valghalla_tfa_sms_message_report_form_year($form, &$form_state) {
-  if (user_access('administer valghalla')) {
+  // Only showing for admin.
+  $account = $GLOBALS['user'];
+  if ($account->uid == 1) {
     $day_options = [];
     for ($i = 1; $i <= 31; $i++) {
       $day_options[$i] = $i;
