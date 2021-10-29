@@ -137,7 +137,7 @@ function _valghalla_volunteers_parse_csv_import($file_object, $party_forced = FA
     module_load_include('php', 'valghalla_volunteers', 'includes/Encoding');
 
     while (($data = fgetcsv($handle, 1024, ",")) !== FALSE) {
-
+      $data[0] = Encoding::toUTF8($data[0]);
       $data[2] = Encoding::toUTF8($data[2]);
       $data[3] = Encoding::toUTF8($data[3]);
       $data[4] = Encoding::toUTF8($data[4]);
