@@ -291,7 +291,8 @@ function _valghalla_volunteer_validator_cpr_validation($cpr, $election = NULL, $
 
     $field_election_date = field_get_items('node', $election, 'field_date');
     if ($election_config['validate_age'] && !empty($field_election_date[0]['value'])) {
-      $messages = array_merge($messages, valghalla_volunteer_validator_validate_service('validate_per_election', $cpr, array('election_date' => $field_election_date[0]['value'])));
+      $plugin_context = array_merge(array('election_date' => $field_election_date[0]['value']), $election_config);
+      $messages = array_merge($messages, valghalla_volunteer_validator_validate_service('validate_per_election', $cpr, $plugin_context));
     }
   }
 
