@@ -39,6 +39,25 @@ function valghalla_volunteer_validator_update_all_validation_criteria_statuses()
 }
 
 /**
+ * Updates validation subscription status per volunteer.
+ *
+ * @param mixed $node
+ *   Volunteer node.
+ */
+function valghalla_volunteer_validator_update_subscription_status($node) {
+  // Fetching subscription.
+  if (variable_get('valghalla_volunteer_validator_get_subscription_status')) {
+    $node_wrapper = entity_metadata_wrapper('node', $node);
+    $cpr = $node_wrapper->field_cpr_number->value();
+    $subscriptions = valghalla_volunteer_validator_query_service('get_subscriptions_status', $cpr);
+    if (!empty($subscriptions[0]['status'])) {
+      $node_wrapper->field_no_mail = (int) $subscriptions[0]['digital_post'] == FALSE ? '1' : '0';
+      $node_wrapper->field_no_sms = $subscriptions[0]['nem_sms'] == FALSE ? '1' : '0';
+    }
+  }
+}
+
+/**
  * Updates validation criteria status per volunteer.
  *
  * @param mixed $node
