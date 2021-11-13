@@ -90,6 +90,7 @@ function valghalla_volunteer_validator_cron() {
 function valghalla_volunteer_validator_node_insert($node) {
   if ($node->type == 'volunteers') {
     valghalla_volunteer_validator_update_validation_criteria_status($node);
+    valghalla_volunteer_validator_update_subscription_status($node);
   }
 }
 
@@ -101,6 +102,17 @@ function valghalla_volunteer_validator_node_insert($node) {
 function valghalla_volunteer_validator_node_delete($node) {
   if ($node->type == 'volunteers') {
     valghalla_volunteer_validator_remove_validation_criteria_status($node->nid);
+    // Load all of our entities.
+    $query = new EntityFieldQuery();
+    $query->entityCondition('entity_type', 'valghalla_volunteer_validation_record')
+      ->propertyCondition('vol_id', $node->nid);
+    $result = $query->execute();
+    $ids = reset($result);
+    if (!empty($ids)) {
+      foreach (valghalla_volunteer_validation_record_load_multiple(array_keys($ids)) as $record) {
+        $record->delete();
+      }
+    }
   }
 }
 
@@ -180,13 +192,7 @@ function valghalla_volunteer_validator_node_presave($node) {
   }
 
   // Fetching subscription.
-  if (variable_get('valghalla_volunteer_validator_get_subscription_status')) {
-    $subscriptions = valghalla_volunteer_validator_query_service('get_subscriptions_status', $cpr);
-    if (!empty($subscriptions[0]['status'])) {
-      $node_wrapper->field_no_mail = (int) $subscriptions[0]['digital_post'] == FALSE ? '1' : '0';
-      $node_wrapper->field_no_sms = $subscriptions[0]['nem_sms'] == FALSE ? '1' : '0';
-    }
-  }
+  valghalla_volunteer_validator_update_subscription_status($node);
 }
 
 /**
