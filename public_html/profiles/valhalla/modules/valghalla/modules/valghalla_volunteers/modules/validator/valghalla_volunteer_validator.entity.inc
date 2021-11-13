@@ -170,10 +170,12 @@ function valghalla_volunteer_validation_record_list_entities($election_id = NULL
 
   $content['links'] = valghalla_volunteer_validation_record_counter_links($election_id);
 
+  $headers[] = t('Type');
   $headers[] = t('Besked');
   $headers[] = t('Tidspunkt');
   $headers[] = t('Operations');
   $result = $query->execute();
+  $types_labels = valghalla_volunteer_validation_record_get_types();
   $ids = reset($result);
   if (!empty($ids)) {
     $entities = valghalla_volunteer_validation_record_load_multiple(array_keys($ids));
@@ -184,6 +186,7 @@ function valghalla_volunteer_validation_record_list_entities($election_id = NULL
       if (!$vol_nid) {
         $row_data['volunteer'] = valghalla_volunteer_validation_record_node_reference_view($entity->vol_id);
       }
+      $row_data['type'] = $types_labels[$entity->type];
       $row_data['message'] = check_markup($message, 'plain_text');
       $row_data['created'] = format_date($entity->created, 'short');
       $row_data['operations'] = theme('links__ctools_dropbutton', array(
@@ -429,5 +432,7 @@ function valghalla_volunteer_validation_record_node_reference_view($nid) {
 function valghalla_volunteer_validation_record_get_types() {
   return array(
     'external_server_sync' => 'Ekstern tilmelding',
+    'no_digital_post' => 'Mangler DP oplysninger',
+    'no_nemsms' => 'Mangler Nem SMS oplysninger',
   );
 }
