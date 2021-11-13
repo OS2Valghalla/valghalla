@@ -360,6 +360,8 @@ function vcv_person_lookup_extended_get_validation_criteria_status($cpr) {
     return array(
       'citizenship' => strcmp($status['citizenship'], '5100') == 0,
       'civil_status' => intval($status['civil_status']) != 90,
+      'empty_digital_post' => !isset($message['persondata']->tilmeldtDigitalpost),
+      'empty_nem_sms' => !isset($message['persondata']->tilmeldtNemsms),
     );
   }
 }
@@ -383,10 +385,44 @@ function vcv_person_lookup_extended_get_subscription_status($cpr){
 
   // If all goes well we return de address as valghalla wants it.
   if ($message['status']) {
+    if (isset($message['persondata']->tilmeldtDigitalpost)) {
+      $digital_post = $message['persondata']->tilmeldtDigitalpost;
+    }
+    else {
+      $digital_post = variable_get('vcv_person_lookup_extended_digital_post_default', 1);
+      $node = _valghalla_helper_get_volunteer_by_cpr($cpr);
+      if (!empty($node) && module_exists('valghalla_volunteer_validator')) {
+        /** @var EntityInterface $valghalla_volunteer_validation_record */
+        $valghalla_volunteer_validation_record = entity_get_controller('valghalla_volunteer_validation_record')->create(array(
+          'type' => 'no_digital_post',
+          'vol_id' => $node->nid,
+          'message' => t('Deltager har ikke information om fritagelse fra digital post'),
+        ));
+        $valghalla_volunteer_validation_record->save();
+      }
+    }
+
+    if (isset($message['persondata']->tilmeldtNemsms)) {
+      $nem_sms = $message['persondata']->tilmeldtNemsms;
+    }
+    else {
+      $nem_sms = variable_get('vcv_person_lookup_extended_nem_sms_default', 1);
+      $node = _valghalla_helper_get_volunteer_by_cpr($cpr);
+      if (!empty($node) && module_exists('valghalla_volunteer_validator')) {
+        /** @var EntityInterface $valghalla_volunteer_validation_record */
+        $valghalla_volunteer_validation_record = entity_get_controller('valghalla_volunteer_validation_record')->create(array(
+          'type' => 'no_nemsms',
+          'vol_id' => $node->nid,
+          'message' => t('Deltager har ikke information om fritagelse fra Nem SMS'),
+        ));
+        $valghalla_volunteer_validation_record->save();
+      }
+    }
+
     return array(
       'status' => TRUE,
-      'digital_post' => $message['persondata']->tilmeldtDigitalpost,
-      'nem_sms' => $message['persondata']->tilmeldtNemsms,
+      'digital_post' => $digital_post,
+      'nem_sms' => $nem_sms,
     );
   }
   else {
