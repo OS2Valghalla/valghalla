@@ -59,7 +59,7 @@ class ServicePlatformenPrintDP extends ServicePlatformenPrint {
 
     // TitelTekst xml field has max length 50 ch.
     if (drupal_strlen($title_text) > 50) {
-      $title_text = substr($title_text, 0, 47) . '...';
+      $title_text = mb_substr($title_text, 0, 47) . '...';
     }
     $params['title_text'] = $title_text;
     $this->request['BrevSPBody'] = array(

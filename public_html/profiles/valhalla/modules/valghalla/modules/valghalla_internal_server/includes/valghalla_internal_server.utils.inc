@@ -81,7 +81,7 @@ function valghalla_internal_server_get_updated_seats($volunteer, $volunteer_revi
  * @param mixed $volunteer_node
  *   Volunteer node.
  * @param mixed $seat
- *   Seat to validate against.
+ *   Seat to validate against - electionInfo field collection
  *
  * @return array
  *   Array with keys 'valid' - boolean, 'errors' - list of errors.
@@ -109,42 +109,24 @@ function valghalla_internal_server_validate_volunteer_seat($volunteer_node, $sea
     }
   }
 
-  // Run volunteer create validator.
-  $messages = valghalla_volunteer_validator_query_service('validate_cpr', $cpr);
-
-  // Run volunteer seat validation.
-  $electionInfo = $seat;
-
   // Getting election.
-  $field_election = field_get_items('field_collection_item', $electionInfo, 'field_election');
+  $election = NULL;
+  $field_election = field_get_items('field_collection_item', $seat, 'field_election');
   if (!empty($field_election)) {
     $election_nid = $field_election[0]['target_id'];
     $election = node_load($election_nid);
   }
 
   // Getting party.
-  $field_post_party = field_get_items('field_collection_item', $electionInfo, 'field_post_party');
+  $party = NULL;
+  $field_post_party = field_get_items('field_collection_item', $seat, 'field_post_party');
   if (!empty($field_post_party)) {
     $party_tid = $field_post_party[0]['target_id'];
     $party = taxonomy_term_load($party_tid);
   }
 
-  // Getting election date.
-  $field_election_date = field_get_items('node', $election, 'field_date');
-  if (!empty($field_election_date)) {
-    $election_date = $field_election_date[0]['value'];
-  }
-
-  if ($election && $party) {
-    $validationStatus['election_nid'] = $election->nid;
-    $election_config = valghalla_volunteer_validator_get_election_config($election, $party);
-    $messages = array_merge($messages, valghalla_volunteer_validator_query_service('validate_cpr_per_election', $cpr, $election_config));
-  }
-
-  if ($election_date) {
-    $plugin_context = array_merge(array('election_date' => $election_date), $election_config);
-    $messages = array_merge($messages, valghalla_volunteer_validator_validate_service('validate_per_election', $cpr, $plugin_context));
-  }
+  // Run CPR validation.
+  $messages = _valghalla_volunteer_validator_cpr_validation($cpr, $election, $party);
 
   foreach ($messages as $message) {
     if ($message['status'] === FALSE) {

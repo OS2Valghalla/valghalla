@@ -1,0 +1,10 @@
+name = Prevent Multiple Submit
+description = This module prevents all forms in drupal from multiple time form submission on continuous click on Submit Button.
+core = 7.x
+scripts[] = js/prevent_multiple_submit.js
+
+; Information added by Drupal.org packaging script on 2019-06-24
+version = "7.x-1.0"
+core = "7.x"
+project = "pms"
+datestamp = "1561356787"
