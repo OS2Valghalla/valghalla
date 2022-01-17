@@ -3,8 +3,8 @@ description = Provides a login link for Nemlogin, requires simplesaml integratio
 package = NemID
 core = 7.x
 
-; Information added by Drupal.org packaging script on 2019-05-03
-version = "7.x-1.0-rc1+10-dev"
+; Information added by Drupal.org packaging script on 2019-07-18
+version = "7.x-1.0-rc2"
 core = "7.x"
 project = "nemid"
-datestamp = "1556885287"
+datestamp = "1563439086"
