@@ -1,0 +1,12 @@
+name = Valghalla CPR Validator service: Serviceplatformen
+description = provides CPR service "serviceplatformen.dk"
+package = NemID
+core = 7.x
+
+dependencies[] = nemid
+
+; Information added by Drupal.org packaging script on 2019-07-18
+version = "7.x-1.0-rc2"
+core = "7.x"
+project = "nemid"
+datestamp = "1563439086"
