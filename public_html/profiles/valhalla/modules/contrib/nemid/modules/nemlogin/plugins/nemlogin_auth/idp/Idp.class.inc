@@ -89,6 +89,7 @@ class NemloginAuthIDP extends NemloginAuth {
 
     $response = NULL;
     $cpr = NULL;
+    $pid = NULL;
 
     try {
       $response = $this->soapClient->LogIn(array('token' => $token, 'mnemo' => $mnemo));
@@ -98,19 +99,29 @@ class NemloginAuthIDP extends NemloginAuth {
     }
 
     if ($response && isset($response->LogInResult)) {
+      // We need to store CPR and PID value between redirects
+      // to be able use it in a a signup form.
+      // This value will be deleted after first usage.
+      // @see $this->fetchValue() method.
+
       $cprraw = $response->LogInResult->cpr;
       if ($cprraw) {
         $cpr = utf8_decode($cprraw);
-        // We need to store CPR value between redirects
-        // to be able use it in a a signup form.
-        // This value will be deleted after first usage.
-        // @see $this->fetchValue() method.
         $this->values['cpr'] = $cpr;
+      }
+
+      $pidraw = $response->LogInResult->pid;
+      if ($pidraw) {
+        $pid = utf8_decode($pidraw);
+        $this->values['pid'] = $pid;
       }
     }
 
     if (!$cpr) {
       watchdog('nemlogin Idp', 'Could not fetch CPR. Response is empty', array(), WATCHDOG_WARNING);
+    }
+    if (!$pid) {
+      watchdog('nemlogin Idp', 'Could not fetch PID. Response is empty', array(), WATCHDOG_WARNING);
     }
 
     if ($this->fetchOnce) {
