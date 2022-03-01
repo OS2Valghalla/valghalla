@@ -8,7 +8,7 @@ public_html/sites/sites.php
 public_html/sites/all/themes/naestved
 public_html/sites/all/themes/skbrg
 public_html/sites/valg-*
-public_html/sites/*.adm.valghalla.dk
+public_html/sites/*.valghalla.dk
 role-permissions/*
 virtualhost.conf
 cert
