@@ -251,6 +251,14 @@ function vcv_person_lookup_extended_validate_cpr_per_election($cpr, $election_co
  * Query the webservice.
  */
 function vcv_person_lookup_extended_query($cpr) {
+  // Check if CPR is valid.
+  if (!valghalla_volunteer_validator_validate_format($cpr)) {
+    return array(
+      'status' => FALSE,
+      'text' => t('CPR is invalid or has a wrong format. Must be 123456-7890'),
+    );
+  }
+
   ini_set('soap.wsdl_cache_enabled', 0);
   ini_set('soap.wsdl_cache_ttl', 0);
 

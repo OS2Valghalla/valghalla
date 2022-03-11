@@ -345,6 +345,14 @@ function vcv_serviceplatformen_query($cpr) {
  *   [text] => Descriptive text if something goes wrong
  */
 function vcv_serviceplatformen_get_address($cpr) {
+  // Check if CPR is valid.
+  if (!valghalla_volunteer_validator_validate_format($cpr)) {
+    return array(
+      'status' => FALSE,
+      'text' => t('CPR is invalid or has a wrong format. Must be 123456-7890'),
+    );
+  }
+
   $message = vcv_serviceplatformen_query($cpr);
 
   // If all goes well we return de address as valghalla wants it.
