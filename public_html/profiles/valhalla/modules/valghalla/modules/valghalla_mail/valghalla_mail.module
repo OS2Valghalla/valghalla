@@ -131,7 +131,10 @@ function valghalla_mail_notifications_mail_recipients_form_alter(&$form, &$form_
   );
 
   global $user;
-  $form_state['storage']['user_email'] = $user->mail;
+  $form['sender']['user_email'] = array(
+    '#type' => 'hidden',
+    '#value' => $user->mail,
+  );
 }
 
 /**
