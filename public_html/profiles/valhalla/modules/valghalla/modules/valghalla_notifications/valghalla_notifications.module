@@ -20,7 +20,7 @@ function valghalla_notifications_menu() {
     'title' => 'Send besked til deltagere',
     'description' => 'Her kan der udsendes besked til alle, eller udvalgte segmenter, af deltagere.',
     'page callback' => 'valghalla_notifications_menu_block_page',
-    'access arguments' => array('administer valghalla'),
+    'access arguments' => array('administer valghalla notification entities'),
     'type' => MENU_NORMAL_ITEM,
     'weight' => -5,
   );
@@ -39,13 +39,13 @@ function valghalla_notifications_menu() {
   $items['valghalla/administration/sendto/%'] = array(
     'page callback' => 'drupal_get_form',
     'page arguments' => array('valghalla_notifications_send_message_form', 3),
-    'access arguments' => array('administer valghalla'),
+    'access arguments' => array('administer valghalla notification entities'),
     'file' => 'includes/valghalla_notifications_form.inc',
   );
 
   $items['valghalla_notifications/ajax/view/%/%'] = array(
     'page callback' => 'valghalla_notifications_ajax_view',
-    'access arguments' => array('administer valghalla'),
+    'access arguments' => array('administer valghalla notification entities'),
     'page arguments' => array(3, 4),
   );
 
@@ -68,7 +68,7 @@ function valghalla_notifications_menu() {
       'title callback' => 'check_plain',
       'page callback' => 'valghalla_notifications_send_create_template_node',
       'page arguments' => array($gateway_id),
-      'access arguments' => array('administer valghalla'),
+      'access arguments' => array('administer valghalla notification entities'),
       'file' => 'includes/valghalla_notifications_form.inc',
       'type' => MENU_NORMAL_ITEM,
       'weight' => -5,

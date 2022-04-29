@@ -199,3 +199,20 @@ function valghalla_notifications_update_7103() {
     user_role_grant_permissions($role->rid, $permissions);
   }
 }
+
+/**
+ * Implements hook_update_N().
+ *
+ * Replacing permission.
+ * Adding permission 'administer valghalla notification entities' to those that
+ * have 'administer valghalla'
+ *
+ */
+function valghalla_notifications_update_7104() {
+  $roles = user_roles(TRUE, 'administer valghalla');
+  $permissions = array('administer valghalla notification entities');
+
+  foreach ($roles as $rid => $role_name) {
+    user_role_grant_permissions($rid, $permissions);
+  }
+}
