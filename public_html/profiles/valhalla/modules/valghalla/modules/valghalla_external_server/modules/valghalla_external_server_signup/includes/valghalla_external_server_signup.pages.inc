@@ -9,6 +9,7 @@
  * Builds signup form.
  */
 function valghalla_external_server_signup_signup_form($form, &$form_state) {
+  drupal_add_js(drupal_get_path('module', 'valghalla_external_server_signup') . '/js/valghalla_external_server_signup.js');
   // Getting election from state or URL.
   $election = isset($form_state['election']) ? $form_state['election'] : NULL;
   if (!$election) {
