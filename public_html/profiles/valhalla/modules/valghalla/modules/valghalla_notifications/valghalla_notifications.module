@@ -203,6 +203,7 @@ function valghalla_notifications_permission() {
     'view any valghalla notification entity' => array(
       'title' => t('View any notification entity'),
     ),
+
   );
   return $permissions;
 }
@@ -609,4 +610,39 @@ function valghalla_notifications_add_email_to_list() {
     }
   }
   return $to;
+}
+
+/**
+ * Function that checks if the similar notification was been sent before.
+ *
+ * Using a timeperiod from settings.
+ * Message is considered similar if type, gateway and vol_id match.
+ *
+ * @param $notification
+ *   Notification to check against.
+ *
+ * @return bool|mixed
+ *   ID of the found notification,
+ *   FALSE if nothing is found.
+ */
+function valghalla_notifications_similar_notification_exists($notification) {
+  // Check period, 10 minutes by default.
+  $period = variable_get('valghalla_eboks_similar_message_wait_period', 10);
+
+  // Check if we have notification with the same properties.
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'entity_valghalla_notification')
+    ->propertyCondition('type', $notification->type, '=')
+    ->propertyCondition('gateway', $notification->gateway, '=')
+    ->propertyCondition('vol_id', $notification->vol_id, '=')
+    ->propertyCondition('created', time()-$period, '>');
+
+  $result = $query->execute();
+
+  if (isset($result['entity_valghalla_notification'])) {
+    $ids = array_keys($result['entity_valghalla_notification']);
+    return reset($ids);
+  }
+
+  return FALSE;
 }

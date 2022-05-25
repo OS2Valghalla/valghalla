@@ -87,31 +87,41 @@ function valghalla_eboks_send_message($to, $params, $context = array()) {
   ));
 
   $notification->save();
-  $params['notification_id'] = $notification->id;
 
-  $service = new ServiceplatformenPrintDP();
-  $service->prepareRequest($params);
-  $type = 'CPR';
-  if (!empty($context['CVR'])) {
-    $type = 'CVR';
+  if ($duplicateId = valghalla_notifications_similar_notification_exists($notification)) {
+    $notification->status = 'Failed';
+    $notification->status_info = 'Skipped. Similar notification was already sent before (ID: ' . $duplicateId . ')';
+    $notification->save();
+    watchdog('valghalla_eboks', 'Notification skipped. Similar notification was already sent before: %id', array('%id' => $duplicateId), WATCHDOG_ERROR);
   }
-  $service->setTo($to, $type);
-  $result = $service->sendMessage();
-  if (!$result['status'] && !empty($result['text'])) {
-    watchdog('valghalla_eboks', 'WS request failed. Error message: %message', array('%message' => $result['text']), WATCHDOG_ERROR);
-  }
+  else {
+    $params['notification_id'] = $notification->id;
 
-  $notification->status = $result['status'] ? 'Succeed' : 'Failed';
-  $notification->message = $params['title_text'] . '<br>' . $params['rendered_message'];
-  if (!empty($params['attachments'])) {
-    $files = array();
-    foreach ($params['attachments'] as $attachment) {
-      $files[] = $attachment['filename'];
+    $service = new ServiceplatformenPrintDP();
+    $service->prepareRequest($params);
+    $type = 'CPR';
+    if (!empty($context['CVR'])) {
+      $type = 'CVR';
     }
-    $notification->message .= t('Attachments:') . theme('item_list', array('items' => $files));
+    $service->setTo($to, $type);
+    $result = $service->sendMessage();
+    if (!$result['status'] && !empty($result['text'])) {
+      watchdog('valghalla_eboks', 'WS request failed. Error message: %message', array('%message' => $result['text']), WATCHDOG_ERROR);
+    }
+
+    $notification->status = $result['status'] ? 'Succeed' : 'Failed';
+    $notification->message = $params['title_text'] . '<br>' . $params['rendered_message'];
+    if (!empty($params['attachments'])) {
+      $files = array();
+      foreach ($params['attachments'] as $attachment) {
+        $files[] = $attachment['filename'];
+      }
+      $notification->message .= t('Attachments:') . theme('item_list', array('items' => $files));
+    }
+    $notification->status_info = $result['response'];
+    $notification->save();
   }
-  $notification->status_info = $result['response'];
-  $notification->save();
+
   return $result['status'];
 }
 
@@ -228,6 +238,13 @@ function valghalla_eboks_form_valghalla_notifications_admin_settings_alter(&$for
   $form['print_service']['valghalla_eboks_test_cvr'] = array(
     '#type' => 'textfield',
     '#title' => t('Send test eboks message to CVR number'),
+  );
+
+  $form['print_service']['valghalla_eboks_similar_message_wait_period'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Similar messages check period (min)'),
+    '#default_value' => variable_get('valghalla_eboks_similar_message_wait_period', 10),
+    '#description' => t('Will abort sending if similar message was sent within this period'),
   );
 
   $form['print_service']['retry'] = array(
