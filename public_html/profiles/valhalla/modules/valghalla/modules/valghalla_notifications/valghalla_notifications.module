@@ -633,6 +633,7 @@ function valghalla_notifications_similar_notification_exists($notification) {
   // Check if we have notification with the same properties.
   $query = new EntityFieldQuery();
   $query->entityCondition('entity_type', 'entity_valghalla_notification')
+    ->propertyCondition('id', $notification->id, '!=')
     ->propertyCondition('type', $notification->type, '=')
     ->propertyCondition('gateway', $notification->gateway, '=')
     ->propertyCondition('vol_id', $notification->vol_id, '=')
