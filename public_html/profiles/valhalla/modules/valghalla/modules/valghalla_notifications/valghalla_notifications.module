@@ -627,7 +627,8 @@ function valghalla_notifications_add_email_to_list() {
  */
 function valghalla_notifications_similar_notification_exists($notification) {
   // Check period, 10 minutes by default.
-  $period = variable_get('valghalla_eboks_similar_message_wait_period', 10);
+  $periodMinutes = (int) variable_get('valghalla_eboks_similar_message_wait_period', 10);
+  $periodSeconds = $periodMinutes * 60;
 
   // Check if we have notification with the same properties.
   $query = new EntityFieldQuery();
@@ -635,7 +636,7 @@ function valghalla_notifications_similar_notification_exists($notification) {
     ->propertyCondition('type', $notification->type, '=')
     ->propertyCondition('gateway', $notification->gateway, '=')
     ->propertyCondition('vol_id', $notification->vol_id, '=')
-    ->propertyCondition('created', time()-$period, '>');
+    ->propertyCondition('created', time() - $periodSeconds, '>');
 
   $result = $query->execute();
 
