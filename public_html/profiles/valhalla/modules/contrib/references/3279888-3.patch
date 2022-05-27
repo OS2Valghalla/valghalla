@@ -1,0 +1,26 @@
+diff --git a/node_reference/node_reference.module b/node_reference/node_reference.module
+index 1fd6060..d10fb3a 100644
+--- a/node_reference/node_reference.module
++++ b/node_reference/node_reference.module
+@@ -853,7 +853,7 @@ function node_reference_potential_references($field, $options = array()) {
+     'string' => '',
+     'match' => 'contains',
+     'ids' => array(),
+-    'limit' => 25,
++    'limit' => false,
+   );
+ 
+   $results = &drupal_static(__FUNCTION__, array());
+diff --git a/user_reference/user_reference.module b/user_reference/user_reference.module
+index bb21f10..e322bf6 100644
+--- a/user_reference/user_reference.module
++++ b/user_reference/user_reference.module
+@@ -847,7 +847,7 @@ function user_reference_potential_references($field, $options = array()) {
+     'string' => '',
+     'match' => 'contains',
+     'ids' => array(),
+-    'limit' => 25,
++    'limit' => false,
+   );
+ 
+   $results = &drupal_static(__FUNCTION__, array());
