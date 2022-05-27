@@ -101,10 +101,6 @@ function liste_valghalla_export_views_default_views() {
   $handler->display->display_options['sorts']['title']['id'] = 'title';
   $handler->display->display_options['sorts']['title']['table'] = 'node';
   $handler->display->display_options['sorts']['title']['field'] = 'title';
-  /* Sorteringskriterie: Felt: Valgsted (field_polling_station) */
-  $handler->display->display_options['sorts']['field_polling_station_nid']['id'] = 'field_polling_station_nid';
-  $handler->display->display_options['sorts']['field_polling_station_nid']['table'] = 'field_data_field_polling_station';
-  $handler->display->display_options['sorts']['field_polling_station_nid']['field'] = 'field_polling_station_nid';
   /* Kontekstuelt filter: Felt: Parti (field_party) */
   $handler->display->display_options['arguments']['field_party_tid']['id'] = 'field_party_tid';
   $handler->display->display_options['arguments']['field_party_tid']['table'] = 'field_data_field_party';
