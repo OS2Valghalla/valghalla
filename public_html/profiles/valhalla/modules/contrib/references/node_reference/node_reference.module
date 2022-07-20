@@ -787,7 +787,7 @@ function node_reference_field_widget_error($element, $error, $form, &$form_state
  *   parameter is TRUE, the list might be nested by optgroup first.
  *
  * @codingStandardsIgnoreStart
- */
+ */ 
 function _node_reference_options($field, $flat = TRUE) {
   // @codingStandardsIgnoreEnd
   $references = node_reference_potential_references($field);
@@ -845,7 +845,7 @@ function _node_reference_options($field, $flat = TRUE) {
  *   )
  *
  * @codingStandardsIgnoreStart
- */
+ */ 
 function node_reference_potential_references($field, $options = array()) {
   // @codingStandardsIgnoreEnd
   // Fill in default options.
@@ -853,7 +853,7 @@ function node_reference_potential_references($field, $options = array()) {
     'string' => '',
     'match' => 'contains',
     'ids' => array(),
-    'limit' => false,
+    'limit' => 25,
   );
 
   $results = &drupal_static(__FUNCTION__, array());
@@ -1290,7 +1290,7 @@ function node_reference_field_views_data_views_data_alter(&$data, $field) {
           'value' => 0,
           'numeric' => TRUE,
         ),
-      ),
+      ),      
     );
   }
 }
