@@ -172,6 +172,7 @@ function valghalla_notifications_send_batch(array $recipients, array $form_state
   }
 
   $context['message'] = t('Det er vigtigt at du ikke forlader denne side!');
+  sleep(variable_get('valghalla_notifications_email_batch_sending_sleep_period',0));
 }
 
 /**

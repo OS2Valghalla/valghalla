@@ -226,6 +226,13 @@ function valghalla_notifications_admin_settings() {
     '#type' => 'checkbox',
   );
 
+  $form['valghalla_notifications']['valghalla_notifications_email_batch_sending_sleep_period'] = array(
+    '#title' => t('E-mail batch afsendelse søvn periode'),
+    '#default_value' => variable_get('valghalla_notifications_email_batch_sending_sleep_period', 0),
+    '#description' => t('Antal sekunder at vente mellem e-mail-batches, der sendes via /administration/send-besked'),
+    '#type' => 'textfield',
+  );
+
   return system_settings_form($form);
 }
 
