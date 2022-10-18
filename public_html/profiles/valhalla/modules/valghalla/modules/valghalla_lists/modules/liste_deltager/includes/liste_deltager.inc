@@ -22,40 +22,43 @@ function liste_deltager_duplikater_form($form, &$form_state) {
   $cpr_duplicates_query->having('count > 1');
   $cpr_duplicates = $cpr_duplicates_query->execute()->fetchCol();
 
-  $query = db_select('node', 'n')
-    ->fields('n', array('nid'))
-    ->orderBy('title')
-    ->condition('type', 'volunteers');
-
-  $query->leftJoin('field_data_field_cpr_number', 'cpr', 'n.nid = cpr.entity_id');
-  $query->condition('cpr.field_cpr_number_value', $cpr_duplicates, 'IN');
-
-  if (!empty($election_nid)) {
-    $inner = new EntityFieldQuery();
-    $fc_info = $inner->entityCondition('entity_type', 'field_collection_item')
-      ->entityCondition('bundle', 'field_electioninfo')
-      ->fieldCondition('field_election', 'target_id', $election_nid)
-      ->propertyCondition('archived', 0)
-      ->execute();
-
-    if (!empty($fc_info['field_collection_item'])) {
-      $keys = array_keys($fc_info['field_collection_item']);
-      $query->leftJoin('field_data_field_electioninfo', 'fci', 'n.nid = fci.entity_id');
-      $query->condition('fci.field_electioninfo_value', $keys, 'IN');
-    }
-  }
-
-  $result = $query->execute()->fetchAll();
   $rows = [];
-  foreach ($result as $row) {
-    $volunteer = node_load($row->nid);
-    $wrapper = entity_metadata_wrapper('node', $volunteer);
-    $rows[$volunteer->nid] = array(
-      $wrapper->title->value(),
-      $wrapper->field_cpr_number->value(),
-      ($wrapper->field_party->value()) ? $wrapper->field_party->value()->name : '',
-      l(t('Edit'), 'node/' . $volunteer->nid . '/edit', array('query' => array('destination' => current_path()))),
-    );
+
+  if (!empty($cpr_duplicates)) {
+    $query = db_select('node', 'n')
+      ->fields('n', array('nid'))
+      ->orderBy('title')
+      ->condition('type', 'volunteers');
+
+    $query->leftJoin('field_data_field_cpr_number', 'cpr', 'n.nid = cpr.entity_id');
+    $query->condition('cpr.field_cpr_number_value', $cpr_duplicates, 'IN');
+
+    if (!empty($election_nid)) {
+      $inner = new EntityFieldQuery();
+      $fc_info = $inner->entityCondition('entity_type', 'field_collection_item')
+        ->entityCondition('bundle', 'field_electioninfo')
+        ->fieldCondition('field_election', 'target_id', $election_nid)
+        ->propertyCondition('archived', 0)
+        ->execute();
+
+      if (!empty($fc_info['field_collection_item'])) {
+        $keys = array_keys($fc_info['field_collection_item']);
+        $query->leftJoin('field_data_field_electioninfo', 'fci', 'n.nid = fci.entity_id');
+        $query->condition('fci.field_electioninfo_value', $keys, 'IN');
+      }
+    }
+
+    $result = $query->execute()->fetchAll();
+    foreach ($result as $row) {
+      $volunteer = node_load($row->nid);
+      $wrapper = entity_metadata_wrapper('node', $volunteer);
+      $rows[$volunteer->nid] = array(
+        $wrapper->title->value(),
+        $wrapper->field_cpr_number->value(),
+        ($wrapper->field_party->value()) ? $wrapper->field_party->value()->name : '',
+        l(t('Edit'), 'node/' . $volunteer->nid . '/edit', array('query' => array('destination' => current_path()))),
+      );
+    }
   }
 
   $header = array(
