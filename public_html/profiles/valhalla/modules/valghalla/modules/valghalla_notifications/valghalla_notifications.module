@@ -615,7 +615,7 @@ function valghalla_notifications_add_email_to_list() {
 /**
  * Function that checks if the similar notification was been sent before.
  *
- * Using a timeperiod from settings.
+ * Using a timeperiod from settinadministration/notificationsgs.
  * Message is considered similar if type, gateway and vol_id match.
  *
  * @param $notification

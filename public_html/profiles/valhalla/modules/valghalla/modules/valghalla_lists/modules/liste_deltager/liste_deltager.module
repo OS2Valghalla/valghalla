@@ -35,6 +35,22 @@ function liste_deltager_menu() {
     'access arguments' => array('liste deltager see list'),
   );
 
+  $items['valghalla_lists/deltagere-duplikater'] = array(
+    'title' => 'Deltagere duplikater',
+    'page callback' => 'drupal_get_form',
+    'file' => 'includes/liste_deltager.inc',
+    'page arguments' => array('liste_deltager_duplikater_form'),
+    'access arguments' => array('liste deltager see list'),
+  );
+
+  $items['valghalla_lists/deltagere-ingen-meddelelser'] = array(
+    'title' => 'Deltagere med ingen meddelelser',
+    'page callback' => 'drupal_get_form',
+    'file' => 'includes/liste_deltager.inc',
+    'page arguments' => array('liste_deltager_ingen_meddelelser_form'),
+    'access arguments' => array('liste deltager see list'),
+  );
+
   return $items;
 }
 
