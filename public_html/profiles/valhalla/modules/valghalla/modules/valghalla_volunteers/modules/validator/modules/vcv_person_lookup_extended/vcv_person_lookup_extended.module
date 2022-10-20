@@ -190,6 +190,14 @@ function vcv_person_lookup_extended_settings_submit(&$form, &$form_state) {
 function vcv_person_lookup_extended_validate_cpr($cpr) {
   $validation_status = vcv_person_lookup_extended_get_validation_criteria_status($cpr);
 
+  // Checking if CPR is valid.
+  if (!$validation_status) {
+    return array(
+      'status' => FALSE,
+      'text' => t('Personen med det angivne CPR-nummer kan ikke findes'),
+    );
+  }
+
   // Checking status.
   if (variable_get('validate_create_civil_status', FALSE)) {
     if (!$validation_status['civil_status']) {
@@ -225,6 +233,14 @@ function vcv_person_lookup_extended_validate_cpr($cpr) {
  */
 function vcv_person_lookup_extended_validate_cpr_per_election($cpr, $election_config) {
   $validation_status = vcv_person_lookup_extended_get_validation_criteria_status($cpr);
+
+  // Checking if CPR is valid.
+  if (!$validation_status) {
+    return array(
+      'status' => FALSE,
+      'text' => t('Personen med det angivne CPR-nummer kan ikke findes'),
+    );
+  }
 
   // Checking civil status.
   if ($election_config['validate_civil_status']) {
