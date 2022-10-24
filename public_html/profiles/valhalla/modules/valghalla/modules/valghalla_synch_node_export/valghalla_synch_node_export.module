@@ -9,6 +9,19 @@ module_load_include('inc', 'valghalla_synch_node_export', 'includes/valghalla_sy
 module_load_include('inc', 'valghalla_synch_node_export', 'includes/valghalla_synch_node_export.utils');
 
 /**
+ * Implements hook_cron().
+ */
+function valghalla_synch_node_export_cron() {
+  $last_run = variable_get('valghalla_synch_node_export_cron_fc_co_last_run');
+  // Only run once a day.
+  if (date('Ymd') <= date('Ymd', $last_run)) {
+    return;
+  }
+  valghalla_synch_node_export_delete_orphaned_fcs_init();
+  variable_set('valghalla_synch_node_export_cron_fc_co_last_run', REQUEST_TIME);
+}
+
+/**
  * Implements hook_node_export_node_alter().
  *
  * Addes the role UUID to the export info,
