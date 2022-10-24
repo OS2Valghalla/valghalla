@@ -61,7 +61,6 @@ function os2logging_access_log_cleanup() {
 
     // Delete entries that are older than a specified store period.
     $threshold_create_ts = $now - ($dblogs_store_period * $seconds_in_day);
-    print_r($threshold_create_ts);
 
     db_delete('os2logging_access_log')
       ->condition('created', $threshold_create_ts, "<")
